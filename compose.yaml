@@ -10,7 +10,7 @@ services:
   ###############################################
   master:
     build:
-      context: ./
+      context: ./master
       dockerfile: master.Dockerfile
     image: ryan2409/master:esd
     restart: always
