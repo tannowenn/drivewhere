@@ -15,7 +15,7 @@ app = Flask(__name__)
 CORS(app)
 
 
-# dont forget to change url if necessary
+# remember dont forget to change url if necessary and port no
 user_URL = environ.get('user_URL') or "http://localhost:<PORTNO>/user" 
 rental_URL = environ.get('rental_URL') or "http://localhost:<PORTNO>/rental" 
 payment_URL = environ.get('payment_URL') or "http://localhost:<PORTNO>/payment" 
