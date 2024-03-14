@@ -47,7 +47,7 @@ def rent_car():
             pay_result = processPayment(rental_request)
             if pay_result == True:
                 result = processMain(rental_request)
-                
+                print(pay_result)
             else:
                 return {
                     "code": 500,
@@ -81,9 +81,37 @@ def rent_car():
 # for user scenario 3
 @app.route("/master/main", methods=['PUT'])
 def return_car():
-    return
+    # Simple check of input format and data of the request are JSON
+    if request.is_json:
+        try:
+            return_request = request.get_json()
+            print("\nReceived an return_request in JSON:", return_request)
+            
+            result = processMain(return_request)
+            
+            print('\n------------------------')
+            print('\nresult: ', result)
+            return jsonify(result), result["code"]
 
-# function to connect to payment service
+        except Exception as e:
+            # Unexpected error in code
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
+            print(ex_str)
+
+            return jsonify({
+                "code": 500,
+                "message": "master/main.py internal error: " + ex_str
+            }), 500
+
+    # if reached here, not a JSON request.
+    return jsonify({
+        "code": 400,
+        "message": "Invalid JSON input: " + str(request.get_data())
+    }), 400
+
+# function to connect to payment service only for scenario 2
 def processPayment(rental_request):
     print('\n-----Invoking payment microservice-----')
     payment_result = invoke_http(payment_URL, method='POST', json=rental_request) # remember to find out what method, for now i use post
@@ -128,14 +156,14 @@ def errorHandling(result, code, current_service):
         "data": {
             "result": result
         },
-        "message": f"Simulated {current_service} error sent for error handling."
+        "message": f"{current_service} error sent for error handling."
     }
 
 # function for processes of scenario 2 and 3
 def processMain(rental_request):
-    #user
-    #rental
-    #amqp(email)
+    #1)user
+    #2)rental
+    #3)amqp(email)
 
     # invoking rental microservice
     current_service = "rental"
@@ -164,8 +192,9 @@ def processMain(rental_request):
     # invoking amqp for email
     message = json.dumps(user_service_result)
 
-    channel.basic_publish(exchange=exchangename, routing_key="order.info", body=message)
+    channel.basic_publish(exchange=exchangename, routing_key="email.alert", body=message, properties=pika.BasicProperties(delivery_mode = 2))
     # remember to ask if theres error for email amqp
+    # remember to ask what routing key for email
 
     # everything successful, u got rental, user and emailed
     return {
