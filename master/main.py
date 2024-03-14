@@ -20,7 +20,7 @@ user_URL = environ.get('user_URL') or "http://localhost:<PORTNO>/user"
 rental_URL = environ.get('rental_URL') or "http://localhost:<PORTNO>/rental" 
 payment_URL = environ.get('payment_URL') or "http://localhost:<PORTNO>/payment" 
 
-#dont forget to change excahnge name
+# remember dont forget to change excahnge name
 exchangename = environ.get('exchangename') or "amqp_topic" 
 exchangetype = environ.get('exchangetype') or "topic" 
 
@@ -42,8 +42,6 @@ def rent_car():
             rental_request = request.get_json()
             print("\nReceived an rental_request in JSON:", rental_request)
 
-            # do the actual work
-            # 1. Send rental request
             pay_result = processPayment(rental_request)
             if pay_result == True:
                 result = processMain(rental_request)
@@ -207,5 +205,5 @@ def processMain(rental_request):
     }
 
 if __name__ == "__main__":
-    print("This is flask " + os.path.basename(__file__) + " for placing an order...")
+    print("This is flask " + os.path.basename(__file__) + " for master microservice")
     app.run(host="0.0.0.0", port=5100, debug=True)
