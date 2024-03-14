@@ -4,9 +4,9 @@ volumes:
   rabbitmq_data:
 
 services:  
-  
+
   ###############################################
-  # Place Order: The Place Order microservice
+  # Place Order: The master microservice
   ###############################################
   master:
     build:
