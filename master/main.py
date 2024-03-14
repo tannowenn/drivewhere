@@ -173,8 +173,17 @@ def processMain(rental_request):
     # error handling for rental microservice
     code = rental_service_result["code"]
     if code not in range(200, 300):
-        return errorHandling(rental_service_result, code, current_service)
-    
+        #send to error amqp and return stuff here
+        errorHandling(rental_service_result, code, current_service)
+        #below is return stuff instead of final return stuff
+        return {
+            "code": code,
+            "data": {
+                "rental_service_result": rental_service_result,
+            },
+            "message": "Failure at rental service."
+        }
+        
     # invoking user microservice
     current_service = "user"
     print('\n\n-----Invoking user microservice-----')    
@@ -185,8 +194,17 @@ def processMain(rental_request):
     # error handling for user microservice
     code = user_service_result["code"]
     if code not in range(200, 300):
-        return errorHandling(user_service_result, code, current_service)
-    
+        # do error amqp and return stuff
+        errorHandling(user_service_result, code, current_service)
+        # return stuff is here
+        return {
+            "code": code,
+            "data": {
+                "rental_service_result": rental_service_result,
+                "user_service_result": user_service_result,
+            },
+            "message": "Failure at user service."
+        }
     # invoking amqp for email
     message = json.dumps(user_service_result)
 
