@@ -17,11 +17,12 @@ CORS(app)
 
 # remember dont forget to change url if necessary and port no
 user_URL = environ.get('user_URL') or "http://localhost:<PORTNO>/user" 
-rental_URL = environ.get('rental_URL') or "http://localhost:<PORTNO>/rental" 
-payment_URL = environ.get('payment_URL') or "http://localhost:<PORTNO>/payment" 
+rental_update_URL = environ.get('rental_update_URL') or "http://localhost:<PORTNO>/rental/update" 
+payment_submit_URL = environ.get('payment_submit_URL') or "http://localhost:<PORTNO>/payment/rent" 
+payment_release_URL = environ.get('payment_release_URL') or "http://localhost:<PORTNO>/payment/return" 
 
 # remember dont forget to change excahnge name
-exchangename = environ.get('exchangename') or "amqp_topic" 
+exchangename = environ.get('exchangename') or "master_topic" 
 exchangetype = environ.get('exchangetype') or "topic" 
 
 #create a connection and a channel to the broker to publish messages to error, email queues
@@ -34,7 +35,7 @@ if not amqp_connection.check_exchange(channel, exchangename, exchangetype):
     sys.exit(0)  # Exit with a success status
 
 # for user scenario 2
-@app.route("/master/main", methods=['POST'])
+@app.route("/master/rental/request", methods=['POST'])
 def rent_car():
     # Simple check of input format and data of the request are JSON
     if request.is_json:
@@ -42,7 +43,7 @@ def rent_car():
             rental_request = request.get_json()
             print("\nReceived an rental_request in JSON:", rental_request)
 
-            pay_result = processPayment(rental_request)
+            pay_result = submitPayment(rental_request)
             if pay_result == True:
                 result = processMain(rental_request)
                 print(pay_result)
@@ -50,7 +51,7 @@ def rent_car():
                 return {
                     "code": 500,
                     "data": {"payment_result": 'failed'},
-                    "message": "Payment failure sent for error logging."
+                    "message": "Submit payment failure sent for error logging. submit payment fail"
                 }
                 # print(pay_result) # remember if its above return or print result
             
@@ -77,7 +78,7 @@ def rent_car():
     }), 400
 
 # for user scenario 3
-@app.route("/master/main", methods=['PUT'])
+@app.route("/master/rental/update", methods=['PUT'])
 def return_car():
     # Simple check of input format and data of the request are JSON
     if request.is_json:
@@ -85,6 +86,16 @@ def return_car():
             return_request = request.get_json()
             print("\nReceived an return_request in JSON:", return_request)
             
+            pay_result = releasePayment(return_request)
+            if pay_result == True:
+                result = processMain(return_request)
+                print(pay_result)
+            else:
+                return {
+                    "code": 500,
+                    "data": {"payment_result": 'failed'},
+                    "message": "Release payment failure sent for error logging. release payment fail"
+                }
             result = processMain(return_request)
             
             print('\n------------------------')
@@ -109,10 +120,40 @@ def return_car():
         "message": "Invalid JSON input: " + str(request.get_data())
     }), 400
 
-# function to connect to payment service only for scenario 2
-def processPayment(rental_request):
+# function to connect to payment service to submit payment
+def submitPayment(rental_request):
     print('\n-----Invoking payment microservice-----')
-    payment_result = invoke_http(payment_URL, method='POST', json=rental_request) # remember to find out what method, for now i use post
+    payment_result = invoke_http(payment_submit_URL, method='POST', json=rental_request) # remember to find out what method, for now i use post
+    print('payment_result:', payment_result)
+
+    # Check the payment result; if a failure, send it to the error microservice.
+    code = payment_result["code"]
+    message = json.dumps(payment_result)
+
+    # remember to ask if complex master need to go to amqp or go to error micro(then error goes to amqp)
+    if code not in range(200, 300): # remember to find what code error uses to be an error
+        # Inform the error microservice
+        #print('\n\n-----Invoking error microservice as payment fails-----')
+        print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
+
+        channel.basic_publish(exchange=exchangename, routing_key="payment.error", 
+            body=message, properties=pika.BasicProperties(delivery_mode = 2)) # remember to find out whats the error routing key i suggest they use *.error
+
+        print("\nPayment status ({:d}) published to the RabbitMQ Exchange:".format(
+            code), payment_result)
+        
+        return {
+            "code": 500,
+            "data": {"payment_result": payment_result},
+            "message": "Payment failure sent for error logging."
+        }
+    else:
+        return True
+
+# function to connect to payment service to submit payment
+def releasePayment(rental_request):
+    print('\n-----Invoking payment microservice-----')
+    payment_result = invoke_http(payment_release_URL, method='POST', json=rental_request) # remember to find out what method, for now i use post
     print('payment_result:', payment_result)
 
     # Check the payment result; if a failure, send it to the error microservice.
@@ -167,7 +208,7 @@ def processMain(rental_request):
     current_service = "rental"
     print('\n\n-----Invoking rental microservice-----')    
     rental_service_result = invoke_http(
-        rental_URL, method="PUT", json=rental_request)
+        rental_update_URL, method="PUT", json=rental_request)
     print("rental_status_result:", rental_service_result, '\n')
 
     # error handling for rental microservice
