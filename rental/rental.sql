@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS `rental` (
   `carModel` varchar(255) NOT NULL,
   `carMake` varchar(255) NOT NULL,
   `capacity` INT NOT NULL,
-  `carPlate` varchar(16) NOT NULL
+  `carPlate` varchar(16) NOT NULL,
   PRIMARY KEY (`rentalId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
