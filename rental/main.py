@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
+import googlemaps
+from datetime import datetime
+
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/book'
@@ -41,13 +44,20 @@ class Rental(db.Model):
 @app.route("/rental")
 def get_open_rental_listings():
     rental_list = db.session.scalars(db.select(Rental).filter_by(status="open")).all()
-
+    data = request.get_json()
     if len(rental_list):
+        for listing in rental_list:
+            gmaps = googlemaps.Client(key='AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE')
+            source = data['address']
+            destination = listing['address']
+            direction_result = gmaps_client.directions(source,destination)
+            listing['distance'] = direction_result
         return jsonify(
             {
                 "code": 200,
                 "data": {
-                    "rental_list": [listing.json() for listing in rental_list]
+                    "rental_list": [listing.json() for listing in rental_list],
+                    "distance" : "hello"
                 }
             }
         )
