@@ -14,6 +14,7 @@ load_dotenv()
 stripe.api_key = os.getenv('STRIPE_KEY')
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
+PAYMENT_PORT = 5004
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('dbURL')
@@ -89,8 +90,8 @@ def rent_car():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://localhost:5000/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}"+'&session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://localhost:5000/payment/cancel',
+            success_url=f"http://localhost:PAYMENT_PORT/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='http://localhost:PAYMENT_PORT/payment/cancel',
         )
 
         return redirect(session.url, code=303)
@@ -160,4 +161,4 @@ def return_car():
         ), 500
 
 if __name__== '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=PAYMENT_PORT, debug=True)
