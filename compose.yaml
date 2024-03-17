@@ -24,9 +24,9 @@ services:
     environment:
       rabbit_host: rabbitmq
       rabbit_port: 5672
-      # rental_get_URL: http://rental:<PORTNO>/rental 
-      # rental_create_URL: http://rental:<PORTNO>/rental/create 
-      # rental_update_URL: http://rental:<PORTNO>/rental/update 
+      # rental_get_URL: http://rental:5002/rental 
+      # rental_create_URL: http://rental:5002/rental/create 
+      # rental_update_URL: http://rental:5002/rental/update 
       # payment_submit_URL: http://payment:4242/payment/rent
       # payment_release_URL: http://payment:4242/payment/return
       PYTHONUNBUFFERED: 1
