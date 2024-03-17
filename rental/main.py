@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
+import json
 import googlemaps
 from datetime import datetime
 
@@ -38,7 +39,7 @@ class Rental(db.Model):
 
 
     def json(self):
-        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "lat": self.lat, "ln" : self.ln, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate}
+        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate}
 
 
 @app.route("/rental")
@@ -46,17 +47,20 @@ def get_open_rental_listings():
     rental_list = db.session.scalars(db.select(Rental).filter_by(status="open")).all()
     data = request.get_json()
     if len(rental_list):
+        rental_dict = []
         for listing in rental_list:
+            listing = listing.json()
             gmaps = googlemaps.Client(key='AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE')
             source = data['address']
             destination = listing['address']
             direction_result = gmaps.directions(source,destination)
             listing['distance'] = direction_result[0]['legs'][0]['distance']['text']
+            rental_dict.append(listing)
         return jsonify(
             {
                 "code": 200,
                 "data": {
-                    "rental_list": [listing.json() for listing in rental_list]
+                    "rental_list": [listing for listing in rental_dict]
                 }
             }
         )
@@ -71,24 +75,23 @@ def get_open_rental_listings():
 def get_rental_info():
     data = request.get_json()
     rentId = data["rentalId"]
-    rental_list = db.session.scalars(db.select(Rental).filter_by(rentalId=rentId)).limit(1)
-    return rentId
-    # if len(rental_list):
-    #     userId = rental_list['userId']
-    #     return jsonify(
-    #         {
-    #             "code": 200,
-    #             "data": {
-    #                 "userId": userId.json()
-    #             }
-    #         }
-    #     )
-    # return jsonify(
-    #     {
-    #         "code": 404,
-    #         "message": "There are no listings."
-    #     }
-    # ), 404
+    rental_list = db.session.scalars(db.select(Rental).filter_by(rentalId = rentId).limit(1)).first()
+    if rental_list:
+        userId = rental_list.userId
+        return jsonify(
+            {
+                "code": 200,
+                "data": {
+                    "userId": userId
+                }
+            }
+        )
+    return jsonify(
+        {
+            "code": 404,
+            "message": "There are no listings."
+        }
+    ), 404
 
 @app.route("/rental/create", methods=['POST'])
 def create_rental_listing():
@@ -118,9 +121,9 @@ def create_rental_listing():
 def update_rental_status():
     data = request.get_json()
     rentId = data["rentalId"]
-    rental_listing = db.session.scalars(db.select(Rental).filter_by(rentalId=rentId)).limit(1)
-    if len(rental_listing):
-        rental_listing["status"] = data["status"]
+    rental_listing = db.session.scalars(db.select(Rental).filter_by(rentalId=rentId).limit(1)).first()
+    if rental_listing:
+        rental_listing.status = data["status"]
         db.session.commit()
         return jsonify(        
         {
