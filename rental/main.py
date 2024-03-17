@@ -50,14 +50,13 @@ def get_open_rental_listings():
             gmaps = googlemaps.Client(key='AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE')
             source = data['address']
             destination = listing['address']
-            direction_result = gmaps_client.directions(source,destination)
-            listing['distance'] = direction_result
+            direction_result = gmaps.directions(source,destination)
+            listing['distance'] = direction_result[0]['legs'][0]['distance']['text']
         return jsonify(
             {
                 "code": 200,
                 "data": {
-                    "rental_list": [listing.json() for listing in rental_list],
-                    "distance" : "hello"
+                    "rental_list": [listing.json() for listing in rental_list]
                 }
             }
         )
