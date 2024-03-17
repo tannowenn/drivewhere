@@ -6,7 +6,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/book'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/rental'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -72,23 +72,23 @@ def get_rental_info():
     data = request.get_json()
     rentId = data["rentalId"]
     rental_list = db.session.scalars(db.select(Rental).filter_by(rentalId=rentId)).limit(1)
-
-    if len(rental_list):
-        userId = rental_list['userId']
-        return jsonify(
-            {
-                "code": 200,
-                "data": {
-                    "userId": userId.json()
-                }
-            }
-        )
-    return jsonify(
-        {
-            "code": 404,
-            "message": "There are no listings."
-        }
-    ), 404
+    return rentId
+    # if len(rental_list):
+    #     userId = rental_list['userId']
+    #     return jsonify(
+    #         {
+    #             "code": 200,
+    #             "data": {
+    #                 "userId": userId.json()
+    #             }
+    #         }
+    #     )
+    # return jsonify(
+    #     {
+    #         "code": 404,
+    #         "message": "There are no listings."
+    #     }
+    # ), 404
 
 @app.route("/rental/create", methods=['POST'])
 def create_rental_listing():
