@@ -1,3 +1,8 @@
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
+START TRANSACTION;
+SET time_zone = "+08:00";
+
 CREATE DATABASE IF NOT EXISTS `rental` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 USE `rental`;
 
@@ -11,6 +16,8 @@ CREATE TABLE IF NOT EXISTS `rental` (
   `carMake` varchar(255) NOT NULL,
   `capacity` INT NOT NULL,
   `carPlate` varchar(16) NOT NULL,
+  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`rentalId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
