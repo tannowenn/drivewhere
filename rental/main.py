@@ -19,7 +19,7 @@ class Rental(db.Model):
     rentalId = db.Column(db.Integer, primary_key=True, autoincrement=True)
     status = db.Column(db.String(16),nullable=False)
     userId = db.Column(db.Integer,nullable=False)
-    address = db.Column(db.String(255,nullable=False))
+    address = db.Column(db.String(255),nullable=False)
     carModel = db.Column(db.String(255),nullable=False)
     carMake = db.Column(db.String(255),nullable=False)
     capacity = db.Column(db.Integer,nullable=False)
@@ -68,7 +68,7 @@ def get_open_rental_listings():
     ), 404
 
 @app.route("/rental/info")
-def get_open_rental_listings():
+def get_rental_info():
     data = request.get_json()
     rentId = data["rentalId"]
     rental_list = db.session.scalars(db.select(Rental).filter_by(rentalId=rentId)).limit(1)
