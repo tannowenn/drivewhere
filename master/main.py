@@ -19,8 +19,8 @@ CORS(app)
 # user_URL = environ.get('user_URL') or "http://localhost:5050/user/<string:owner_id>" 
 rental_update_URL = environ.get('rental_update_URL') or "http://localhost:<PORTNO>/rental/update" 
 rental_get_URL = environ.get('rental_get_URL') or "http://rental:<PORTNO>/rental "
-payment_submit_URL = environ.get('payment_submit_URL') or "http://localhost:4242payment/rent" 
-payment_release_URL = environ.get('payment_release_URL') or "http://localhost:4242/payment/return" 
+payment_submit_URL = environ.get('payment_submit_URL') or "http://payment:4242/payment/rent" 
+payment_release_URL = environ.get('payment_release_URL') or "http://payment:4242/payment/return"
 
 # remember dont forget to change excahnge name
 exchangename = environ.get('exchangename') or "master_topic" 
