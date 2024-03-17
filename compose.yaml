@@ -24,7 +24,6 @@ services:
     environment:
       rabbit_host: rabbitmq
       rabbit_port: 5672
-      # user_URL: http://user:5050/user
       # rental_get_URL: http://rental:<PORTNO>/rental 
       # rental_create_URL: http://rental:<PORTNO>/rental/create 
       # rental_update_URL: http://rental:<PORTNO>/rental/update 
