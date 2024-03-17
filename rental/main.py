@@ -16,20 +16,18 @@ class Rental(db.Model):
     rentalId = db.Column(db.Integer, primary_key=True, autoincrement=True)
     status = db.Column(db.String(16),nullable=False)
     userId = db.Column(db.Integer,nullable=False)
-    lat = db.Column(db.Float,nullable=False)
-    ln = db.Column(db.Float,nullable=False)
+    address = db.Column(db.String(255,nullable=False))
     carModel = db.Column(db.String(255),nullable=False)
     carMake = db.Column(db.String(255),nullable=False)
     capacity = db.Column(db.Integer,nullable=False)
     carPlate = db.Column(db.String(16),nullable=False)
 
 
-    def __init__(self, rentalId, status, userId, lat,ln,carModel,carMake,capacity,carPlate):
+    def __init__(self, rentalId, status, userId, address, carModel, carMake, capacity, carPlate):
         self.rentalId = rentalId
         self.status = status
         self.userId = userId
-        self.lat = lat
-        self.ln = ln
+        self.address = address
         self.carModel = carModel
         self.carMake = carMake
         self.capacity = capacity
@@ -63,11 +61,11 @@ def get_open_rental_listings():
 @app.route("/rental/info")
 def get_open_rental_listings():
     data = request.get_json()
-    rentId = data.rentalId
+    rentId = data["rentalId"]
     rental_list = db.session.scalars(db.select(Rental).filter_by(rentalId=rentId)).limit(1)
 
     if len(rental_list):
-        userId = rental_list.userId
+        userId = rental_list['userId']
         return jsonify(
             {
                 "code": 200,
@@ -85,23 +83,8 @@ def get_open_rental_listings():
 
 @app.route("/rental/create", methods=['POST'])
 def create_rental_listing():
-    # if (db.session.scalars(
-    #   db.select(Rental).filter_by(isbn13=isbn13).
-    #   limit(1)
-    #   ).first()
-    #   ):
-    #     return jsonify(
-    #         {
-    #             "code": 400,
-    #             "data": {
-    #                 "isbn13": isbn13
-    #             },
-    #             "message": "Book already exists."
-    #         }
-    #     ), 400
     data = request.get_json()
     listing = Rental(**data)
-
 
     try:
         db.session.add(listing)
@@ -110,9 +93,6 @@ def create_rental_listing():
         return jsonify(
             {
                 "code": 500,
-                # "data": {
-                #     "isbn13": isbn13
-                # },
                 "message": "An error occurred creating the listing."
             }
         ), 500
@@ -128,24 +108,24 @@ def create_rental_listing():
 @app.route("/rental/update", methods=['PUT'])
 def update_rental_status():
     data = request.get_json()
-    rentId = data.rentalId
+    rentId = data["rentalId"]
     rental_listing = db.session.scalars(db.select(Rental).filter_by(rentalId=rentId)).limit(1)
     if len(rental_listing):
-        rental_listing.status = data.status
+        rental_listing["status"] = data["status"]
         db.session.commit()
         return jsonify(        
         {
             "code": 201,
             "data": rental_listing.json()
         }
-    ), 201
+        ), 201
 
     return jsonify(
         {
             "code": 404,
             "message": "Error in updating"
         }
-    ), 404
+        ), 404
     
 
 if __name__== '__main__':
