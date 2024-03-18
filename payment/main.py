@@ -80,7 +80,6 @@ def cancel():
         }
     ), 200
 
-# Remember to turn off Automatically follow redirects in Postman settings
 # Use card number 4000003720000278 to ensure balance goes directly to stripe account
 @app.route('/payment/rent', methods=['POST'])
 def rent_car():
