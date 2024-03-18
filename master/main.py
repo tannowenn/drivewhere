@@ -15,12 +15,11 @@ app = Flask(__name__)
 CORS(app)
 
 
-# remember dont forget to change url if necessary and port no
-# user_URL = environ.get('user_URL') or "http://localhost:5050/user/<string:owner_id>" 
-rental_update_URL = environ.get('rental_update_URL') or "http://localhost:<PORTNO>/rental/update" 
-rental_get_URL = environ.get('rental_get_URL') or "http://rental:<PORTNO>/rental "
-payment_submit_URL = environ.get('payment_submit_URL') or "http://payment:4242/payment/rent" 
-payment_release_URL = environ.get('payment_release_URL') or "http://payment:4242/payment/return"
+rental_update_URL = environ.get('rental_update_URL') or "http://localhost:5002/rental/update" 
+rental_get_URL = environ.get('rental_get_URL') or "http://localhost:5002/rental/info"
+
+payment_submit_URL = environ.get('payment_submit_URL') or "http://localhost:5004/payment/rent" 
+payment_release_URL = environ.get('payment_release_URL') or "http://localhost:5004/payment/return"
 
 # remember dont forget to change excahnge name
 exchangename = environ.get('exchangename') or "master_topic" 
@@ -43,16 +42,23 @@ def rent_car():
         try:
             rental_request = request.get_json()
             print("\nReceived an rental_request in JSON:", rental_request)
-
+            
             # order as follows
             # 1) goes to rental(get) to get owner id
             # 2) goes to user(get) to get owner email
             # 3) goes to payment(submit) to do payment
             # 4) goes to rental(put) to change rental status
             # 5) goes to email(amqp) to alert owner 
+
+            renterID = rental_request["userId"]
+            paymentAmt = rental_request["paymentAmt"]
+            rentalId = rental_request["rentalId"]
             
             #start get rental
-            rental_get = getRental(rental_request)
+            sendData = {
+                "rentalId":rentalId
+            }
+            rental_get = getRental(sendData)
             current_code = rental_get['code']
             
             if current_code not in range(200, 300):
@@ -60,13 +66,13 @@ def rent_car():
                 
                 return {
                     "code": current_code,
-                    
+                    "data": rental_get["data"],
                     "message": "Failure at rental get service."
                 }
+            ownerId = rental_get['data']['userId']
 
             # starting get user
-            owner_id = rental_get['data']
-            user_get = getUser(owner_id)
+            user_get = getUser(ownerId)
             current_code = user_get['code']
 
             if current_code not in range(200, 300):
@@ -74,26 +80,38 @@ def rent_car():
                 
                 return {
                     "code": current_code,
-                    
+                    "data": user_get["data"],
                     "message": "Failure at user get service."
                 }
-
+            email_address = user_get['data']['emailAddress']
+            
             # start submit payment
-            rental_id = rental_request['rentalId']
-            payment_post = submitPayment(rental_id)
+            sub_pay = {
+                "rentalId": rentalId,
+                "paymentAmt": paymentAmt,
+                "payerId": renterID,
+                "payeeId": ownerId
+            }
+
+            payment_post = submitPayment(sub_pay)
             current_code = payment_post['code']
 
             if current_code not in range(200, 300):
                 #no need send to error amqp as its done already and return stuff here
-                
                 return {
                     "code": current_code,
-                    
-                    "message": "Failure at submit payment service."
+                    "data": payment_post["data"],
+                    "message": "Failure at payment submit"
                 }
 
+
             # start rental put
-            rental_put = updateRental(rental_request)
+            sendData2 = {
+                "rentalId": rentalId,
+                "status": "rented"
+            }
+            
+            rental_put = updateRental(sendData2)
             current_code = rental_put['code']
 
             if current_code not in range(200, 300):
@@ -101,12 +119,11 @@ def rent_car():
                 
                 return {
                     "code": current_code,
-                    
+                    "data": rental_put["data"],
                     "message": "Failure at rental put service."
                 }
 
             # start email amqp
-            email_address = user_get['emailAddress']
             email_amqp = email(email_address)
             current_code = email_amqp['code']
 
@@ -115,14 +132,14 @@ def rent_car():
                 
                 return {
                     "code": current_code,
-                    
+            
                     "message": "Failure at email service."
                 }
 
             # renturn everything success
             return {
                 "code": 200,
-                "message": "Everything was a success car is rented!"
+                "message": "Everything is a success, car is rented"
 
             }
             
@@ -161,8 +178,14 @@ def return_car():
             # 4) goes to rental(put) to change rental status
             # 5) goes to email(amqp) to alert owner 
 
+            rentalId = return_request["rentalId"]
+
             #start rental get
-            rental_get = getRental(return_request)
+            sendData = {
+                "rentalId":rentalId
+            }
+
+            rental_get = getRental(sendData)
             current_code = rental_get['code']
             
             if current_code not in range(200, 300):
@@ -170,29 +193,30 @@ def return_car():
                 
                 return {
                     "code": current_code,
-                    
+                    "data": rental_get["data"],
                     "message": "Failure at rental get service."
                 }
-
+            
+            ownerId = rental_get['data']['userId']
+            
             # start get user
-            owner_id = rental_get['data']
-            user_get = getUser(owner_id)
+            user_get = getUser(ownerId)
             current_code = user_get['code']
             if current_code not in range(200, 300):
                 #no need send to error amqp as its done already and return stuff here
                 
                 return {
                     "code": current_code,
-                    
+                    "data": user_get["data"],
                     "message": "Failure at user get service."
                 }
+            email_address = user_get['data']['emailAddress']
+            stripeId =  user_get['data']['stripeId']
 
             # start release payment
-            rental_id = return_request['rentalId']
-            stripe_id = user_get['stripeId']
             payment_info = {
-                "rentalId":rental_id,
-                "stripeId":stripe_id
+                "rentalId": rentalId,
+                "stripeId": stripeId
             }
             payment_post = releasePayment(payment_info)
             current_code = payment_post['code']
@@ -202,12 +226,17 @@ def return_car():
                 
                 return {
                     "code": current_code,
-                    
+                    "data": payment_post,
                     "message": "Failure at release payment service."
                 }
 
             # start rental put
-            rental_put = updateRental(return_request)
+            sendData2 = {
+                "rentalId": rentalId,
+                "status": "finishedRent"
+            }
+
+            rental_put = updateRental(sendData2)
             current_code = rental_put['code']
 
             if current_code not in range(200, 300):
@@ -215,12 +244,11 @@ def return_car():
                 
                 return {
                     "code": current_code,
-                    
+                    "data": rental_put["data"],
                     "message": "Failure at rental put service."
                 }
 
             # start email amqp
-            email_address = user_get['emailAddress']
             email_amqp = email(email_address)
             current_code = email_amqp['code']
 
@@ -259,12 +287,11 @@ def return_car():
     }), 400
 
 # function to connect to payment service to submit payment
-def submitPayment(rental_request):
+def submitPayment(sub_pay):
     print('\n-----Invoking payment microservice-----')
     current_service = 'payment'
-    payment_result = invoke_http(payment_submit_URL, method='POST', json=rental_request) 
+    payment_result = invoke_http(payment_submit_URL, method='POST', json=sub_pay) 
     print('payment_result:', payment_result)
-
     # Check the payment result; if a failure, send it to the error microservice.
     code = payment_result["code"]
 
@@ -277,10 +304,7 @@ def submitPayment(rental_request):
         
         return {
         "code": code,
-        "data": {
-            "payment_submit_result": payment_result,
-        },
-        "message": "Failure at payment_submit service."
+        "data": payment_result,
     }
     else:
         return payment_result
@@ -304,10 +328,7 @@ def releasePayment(rental_request):
 
         return {
         "code": code,
-        "data": {
-            "payment_submit_result": payment_result,
-        },
-        "message": "Failure at payment_submit service."
+        "data": payment_result,
     }
     else:
         return payment_result
@@ -324,21 +345,19 @@ def errorHandling(result, code, current_service):
     
     return {
         "code": 400,
-        "data": {
-            "result": result
-        },
+        "data": result,
         "message": f"{current_service} error sent for error handling."
     }
 
 # function for rental get list
-def getRental(rental_request):
+def getRental(sendData):
 
     # invoking rental microservice
     current_service = "rental"
-    print('\n\n-----Invoking rental microservice-----')   
-
+    print('\n\n-----Invoking get rental microservice-----')   
+    
     rental_service_result = invoke_http(
-        rental_get_URL, method="GET", json=rental_request)
+        rental_get_URL, method="GET", json=sendData)
     
     print("rental_status_result:", rental_service_result, '\n')
 
@@ -346,14 +365,11 @@ def getRental(rental_request):
     code = rental_service_result["code"]
     if code not in range(200, 300):
         #send to error amqp and return stuff here
-        errorHandling(rental_service_result, code, current_service)
+        # errorHandling(rental_service_result, code, current_service)
         #below is return stuff instead of final return stuff
         return {
             "code": code,
-            "data": {
-                "rental_service_result": rental_service_result,
-            },
-            "message": "Failure at rental service."
+            "data": rental_service_result
         }
     else:
         return rental_service_result
@@ -362,23 +378,19 @@ def getRental(rental_request):
 def updateRental(update_request):
     # invoking rental microservice
     current_service = "rental"
-    print('\n\n-----Invoking rental microservice-----')    
-    rental_service_result = invoke_http(
-        rental_update_URL, method="PUT", json=update_request)
+    print('\n\n-----Invoking put rental microservice-----')    
+    rental_service_result = invoke_http(rental_update_URL, method="PUT", json=update_request)
     print("rental_status_result:", rental_service_result, '\n')
 
     # error handling for rental microservice
     code = rental_service_result["code"]
     if code not in range(200, 300):
         #send to error amqp and return stuff here
-        errorHandling(rental_service_result, code, current_service)
+        # errorHandling(rental_service_result, code, current_service)
        
         return {
             "code": code,
-            "data": {
-                "rental_service_result": rental_service_result,
-            },
-            "message": "Failure at rental service."
+            "data": rental_service_result,
         }
     else:
         return rental_service_result
@@ -389,7 +401,7 @@ def getUser(owner_id):
     current_service = "user"
 
     print('\n\n-----Invoking user microservice-----')    
-    user_URL = f"http://localhost:5050/user/{owner_id}" 
+    user_URL = f"http://user:5001/user/{owner_id}" 
     
     user_service_result = invoke_http(
         user_URL, method="GET")
@@ -404,10 +416,7 @@ def getUser(owner_id):
         
         return {
             "code": code,
-            "data": {
-                "user_service_result": user_service_result,
-            },
-            "message": "Failure at user service."
+            "data": user_service_result
         }
     else:
         return user_service_result
