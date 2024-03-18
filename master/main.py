@@ -16,10 +16,11 @@ CORS(app)
 
 
 # remember dont forget to change url if necessary and port no
-user_URL = environ.get('user_URL') or "http://localhost:<PORTNO>/user" 
+# user_URL = environ.get('user_URL') or "http://localhost:5050/user/<string:owner_id>" 
 rental_update_URL = environ.get('rental_update_URL') or "http://localhost:<PORTNO>/rental/update" 
-payment_submit_URL = environ.get('payment_submit_URL') or "http://localhost:<PORTNO>/payment/rent" 
-payment_release_URL = environ.get('payment_release_URL') or "http://localhost:<PORTNO>/payment/return" 
+rental_get_URL = environ.get('rental_get_URL') or "http://rental:<PORTNO>/rental "
+payment_submit_URL = environ.get('payment_submit_URL') or "http://payment:4242/payment/rent" 
+payment_release_URL = environ.get('payment_release_URL') or "http://payment:4242/payment/return"
 
 # remember dont forget to change excahnge name
 exchangename = environ.get('exchangename') or "master_topic" 
@@ -43,21 +44,88 @@ def rent_car():
             rental_request = request.get_json()
             print("\nReceived an rental_request in JSON:", rental_request)
 
-            pay_result = submitPayment(rental_request)
-            if pay_result == True:
-                result = processMain(rental_request)
-                print(pay_result)
-            else:
-                return {
-                    "code": 500,
-                    "data": {"payment_result": 'failed'},
-                    "message": "Submit payment failure sent for error logging. submit payment fail"
-                }
-                # print(pay_result) # remember if its above return or print result
+            # order as follows
+            # 1) goes to rental(get) to get owner id
+            # 2) goes to user(get) to get owner email
+            # 3) goes to payment(submit) to do payment
+            # 4) goes to rental(put) to change rental status
+            # 5) goes to email(amqp) to alert owner 
             
-            print('\n------------------------')
-            print('\nresult: ', result)
-            return jsonify(result), result["code"]
+            #start get rental
+            rental_get = getRental(rental_request)
+            current_code = rental_get['code']
+            
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at rental get service."
+                }
+
+            # starting get user
+            owner_id = rental_get['data']
+            user_get = getUser(owner_id)
+            current_code = user_get['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at user get service."
+                }
+
+            # start submit payment
+            rental_id = rental_request['rentalId']
+            payment_post = submitPayment(rental_id)
+            current_code = payment_post['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at submit payment service."
+                }
+
+            # start rental put
+            rental_put = updateRental(rental_request)
+            current_code = rental_put['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at rental put service."
+                }
+
+            # start email amqp
+            email_address = user_get['emailAddress']
+            email_amqp = email(email_address)
+            current_code = email_amqp['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at email service."
+                }
+
+            # renturn everything success
+            return {
+                "code": 200,
+                "message": "Everything was a success car is rented!"
+
+            }
+            
 
         except Exception as e:
             # Unexpected error in code
@@ -86,22 +154,92 @@ def return_car():
             return_request = request.get_json()
             print("\nReceived an return_request in JSON:", return_request)
             
-            pay_result = releasePayment(return_request)
-            if pay_result == True:
-                result = processMain(return_request)
-                print(pay_result)
-            else:
-                return {
-                    "code": 500,
-                    "data": {"payment_result": 'failed'},
-                    "message": "Release payment failure sent for error logging. release payment fail"
-                }
-            result = processMain(return_request)
-            
-            print('\n------------------------')
-            print('\nresult: ', result)
-            return jsonify(result), result["code"]
+            # order as follows
+            # 1) goes to rental(get) to get owner id
+            # 2) goes to user(get) to get owner email+stripeid
+            # 3) goes to payment(release) to do payment
+            # 4) goes to rental(put) to change rental status
+            # 5) goes to email(amqp) to alert owner 
 
+            #start rental get
+            rental_get = getRental(return_request)
+            current_code = rental_get['code']
+            
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at rental get service."
+                }
+
+            # start get user
+            owner_id = rental_get['data']
+            user_get = getUser(owner_id)
+            current_code = user_get['code']
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at user get service."
+                }
+
+            # start release payment
+            rental_id = return_request['rentalId']
+            stripe_id = user_get['stripeId']
+            payment_info = {
+                "rentalId":rental_id,
+                "stripeId":stripe_id
+            }
+            payment_post = releasePayment(payment_info)
+            current_code = payment_post['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at release payment service."
+                }
+
+            # start rental put
+            rental_put = updateRental(return_request)
+            current_code = rental_put['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at rental put service."
+                }
+
+            # start email amqp
+            email_address = user_get['emailAddress']
+            email_amqp = email(email_address)
+            current_code = email_amqp['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    
+                    "message": "Failure at email service."
+                }
+
+            # return everything success
+            return {
+                "code": 200,
+                "message": "Everything was a success car is returned!"
+
+            }
+            
         except Exception as e:
             # Unexpected error in code
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -123,73 +261,67 @@ def return_car():
 # function to connect to payment service to submit payment
 def submitPayment(rental_request):
     print('\n-----Invoking payment microservice-----')
-    payment_result = invoke_http(payment_submit_URL, method='POST', json=rental_request) # remember to find out what method, for now i use post
+    current_service = 'payment'
+    payment_result = invoke_http(payment_submit_URL, method='POST', json=rental_request) 
     print('payment_result:', payment_result)
 
     # Check the payment result; if a failure, send it to the error microservice.
     code = payment_result["code"]
-    message = json.dumps(payment_result)
 
-    # remember to ask if complex master need to go to amqp or go to error micro(then error goes to amqp)
-    if code not in range(200, 300): # remember to find what code error uses to be an error
+    if code not in range(200, 300):
         # Inform the error microservice
         #print('\n\n-----Invoking error microservice as payment fails-----')
         print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
 
-        channel.basic_publish(exchange=exchangename, routing_key="payment.error", 
-            body=message, properties=pika.BasicProperties(delivery_mode = 2)) # remember to find out whats the error routing key i suggest they use *.error
-
-        print("\nPayment status ({:d}) published to the RabbitMQ Exchange:".format(
-            code), payment_result)
+        errorHandling(payment_result, code, current_service)
         
         return {
-            "code": 500,
-            "data": {"payment_result": payment_result},
-            "message": "Payment failure sent for error logging."
-        }
+        "code": code,
+        "data": {
+            "payment_submit_result": payment_result,
+        },
+        "message": "Failure at payment_submit service."
+    }
     else:
-        return True
+        return payment_result
 
 # function to connect to payment service to submit payment
 def releasePayment(rental_request):
     print('\n-----Invoking payment microservice-----')
-    payment_result = invoke_http(payment_release_URL, method='POST', json=rental_request) # remember to find out what method, for now i use post
+    current_service = 'payment'
+    payment_result = invoke_http(payment_release_URL, method='POST', json=rental_request)
     print('payment_result:', payment_result)
 
     # Check the payment result; if a failure, send it to the error microservice.
     code = payment_result["code"]
-    message = json.dumps(payment_result)
-
-    # remember to ask if complex master need to go to amqp or go to error micro(then error goes to amqp)
-    if code not in range(200, 300): # remember to find what code error uses to be an error
+    
+    if code not in range(200, 300):
         # Inform the error microservice
         #print('\n\n-----Invoking error microservice as payment fails-----')
         print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
 
-        channel.basic_publish(exchange=exchangename, routing_key="payment.error", 
-            body=message, properties=pika.BasicProperties(delivery_mode = 2)) # remember to find out whats the error routing key i suggest they use *.error
+        errorHandling(payment_result, code, current_service)
 
-        print("\nPayment status ({:d}) published to the RabbitMQ Exchange:".format(
-            code), payment_result)
-        
         return {
-            "code": 500,
-            "data": {"payment_result": payment_result},
-            "message": "Payment failure sent for error logging."
-        }
+        "code": code,
+        "data": {
+            "payment_submit_result": payment_result,
+        },
+        "message": "Failure at payment_submit service."
+    }
     else:
-        return True
+        return payment_result
 
 # error handling function that is resused to save code
 def errorHandling(result, code, current_service):
     message = json.dumps(result)
     channel.basic_publish(exchange=exchangename, routing_key=current_service+".error", 
-        body=message, properties=pika.BasicProperties(delivery_mode = 2))# remember idk if can combine var with str in routing key
+        body=message, properties=pika.BasicProperties(delivery_mode = 2))
 
     print("\nservice status ({:d}) published to the RabbitMQ Exchange:".format(
         code), result)
 
-    # 7. Return error
+    
     return {
         "code": 400,
         "data": {
@@ -198,17 +330,16 @@ def errorHandling(result, code, current_service):
         "message": f"{current_service} error sent for error handling."
     }
 
-# function for processes of scenario 2 and 3
-def processMain(rental_request):
-    #1)user
-    #2)rental
-    #3)amqp(email)
+# function for rental get list
+def getRental(rental_request):
 
     # invoking rental microservice
     current_service = "rental"
-    print('\n\n-----Invoking rental microservice-----')    
+    print('\n\n-----Invoking rental microservice-----')   
+
     rental_service_result = invoke_http(
-        rental_update_URL, method="PUT", json=rental_request)
+        rental_get_URL, method="GET", json=rental_request)
+    
     print("rental_status_result:", rental_service_result, '\n')
 
     # error handling for rental microservice
@@ -224,12 +355,45 @@ def processMain(rental_request):
             },
             "message": "Failure at rental service."
         }
-        
+    else:
+        return rental_service_result
+
+# function for update rental
+def updateRental(update_request):
+    # invoking rental microservice
+    current_service = "rental"
+    print('\n\n-----Invoking rental microservice-----')    
+    rental_service_result = invoke_http(
+        rental_update_URL, method="PUT", json=update_request)
+    print("rental_status_result:", rental_service_result, '\n')
+
+    # error handling for rental microservice
+    code = rental_service_result["code"]
+    if code not in range(200, 300):
+        #send to error amqp and return stuff here
+        errorHandling(rental_service_result, code, current_service)
+       
+        return {
+            "code": code,
+            "data": {
+                "rental_service_result": rental_service_result,
+            },
+            "message": "Failure at rental service."
+        }
+    else:
+        return rental_service_result
+
+# function for user service
+def getUser(owner_id):
     # invoking user microservice
     current_service = "user"
+
     print('\n\n-----Invoking user microservice-----')    
+    user_URL = f"http://localhost:5050/user/{owner_id}" 
+    
     user_service_result = invoke_http(
-        user_URL, method="GET", json=rental_service_result)
+        user_URL, method="GET")
+    
     print("user_status_result:", user_service_result, '\n')
 
     # error handling for user microservice
@@ -237,31 +401,29 @@ def processMain(rental_request):
     if code not in range(200, 300):
         # do error amqp and return stuff
         errorHandling(user_service_result, code, current_service)
-        # return stuff is here
+        
         return {
             "code": code,
             "data": {
-                "rental_service_result": rental_service_result,
                 "user_service_result": user_service_result,
             },
             "message": "Failure at user service."
         }
+    else:
+        return user_service_result
+    
+# function for email
+def email(email_address):
     # invoking amqp for email
-    message = json.dumps(user_service_result)
+    message = json.dumps(email_address)
 
     channel.basic_publish(exchange=exchangename, routing_key="email.alert", body=message, properties=pika.BasicProperties(delivery_mode = 2))
     # remember to ask if theres error for email amqp
     # remember to ask what routing key for email
 
-    # everything successful, u got rental, user and emailed
-    return {
-        "code": 201,
-        "data": {
-            "rental_service_result": rental_service_result,
-            "user_service_result": user_service_result,
-            "emailed_already":True
-        }
-    }
+    #remember how to determine if email success
+    #remember will email service return anything?
+
 
 if __name__ == "__main__":
     print("This is flask " + os.path.basename(__file__) + " for master microservice")
