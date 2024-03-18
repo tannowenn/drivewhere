@@ -16,7 +16,7 @@ db = SQLAlchemy(app)
 class Rental(db.Model):
     __tablename__ = 'rental'
 
-    rentalId = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    rentalId = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String(16),nullable=False)
     userId = db.Column(db.Integer,nullable=False)
     address = db.Column(db.String(255),nullable=False)
