@@ -21,3 +21,5 @@ CREATE TABLE IF NOT EXISTS `rental` (
 
 INSERT INTO `rental` (`rentalId`, `status`, `userId`, `address`, `carModel`,`carMake`,`capacity`,`carPlate`) VALUES
 (1, 'open', '2', '520709', 'Honda', 'HondaWow', 1, '12345678');
+
+COMMIT;
