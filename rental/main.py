@@ -26,16 +26,6 @@ class Rental(db.Model):
     carPlate = db.Column(db.String(16),nullable=False)
 
 
-    def __init__(self, rentalId, status, userId, address, carModel, carMake, capacity, carPlate):
-        self.rentalId = rentalId
-        self.status = status
-        self.userId = userId
-        self.address = address
-        self.carModel = carModel
-        self.carMake = carMake
-        self.capacity = capacity
-        self.carPlate = carPlate
-
 
     def json(self):
         return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate}
