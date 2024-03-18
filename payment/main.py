@@ -73,7 +73,12 @@ def success():
 
 @app.route('/payment/cancel')
 def cancel():
-    return "PAYMENT CANCELLED"
+    return jsonify(
+        {
+            "code": 200,
+            "message": "Payment has been cancelled"
+        }
+    ), 200
 
 # Remember to turn off Automatically follow redirects in Postman settings
 # Use card number 4000003720000278 to ensure balance goes directly to stripe account
@@ -104,7 +109,7 @@ def rent_car():
         return jsonify(
             {
                 "code": 500,
-                "message": "An error occurred while proceeding to checkout. " + str(e)
+                "message": "An error occurred while proceeding to payment. " + str(e)
             }
         ), 500
 
