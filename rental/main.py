@@ -27,6 +27,7 @@ class Rental(db.Model):
 
 
 
+
     def json(self):
         return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate}
 
@@ -85,7 +86,7 @@ def get_rental_info():
 @app.route("/rental/create", methods=['POST'])
 def create_rental_listing():
     data = request.get_json()
-    listing = Rental('rentalId',**data)
+    listing = Rental(**data)
 
     try:
         db.session.add(listing)
@@ -130,4 +131,4 @@ def update_rental_status():
     
 
 if __name__== '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5002, debug=True)
