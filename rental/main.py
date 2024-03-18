@@ -95,7 +95,7 @@ def get_rental_info():
 @app.route("/rental/create", methods=['POST'])
 def create_rental_listing():
     data = request.get_json()
-    listing = Rental(**data)
+    listing = Rental('rentalId',**data)
 
     try:
         db.session.add(listing)
