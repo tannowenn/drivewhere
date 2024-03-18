@@ -1,10 +1,10 @@
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
-START TRANSACTION;
-SET time_zone = "+08:00";
+-- SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+-- SET AUTOCOMMIT = 0;
+-- START TRANSACTION;
+-- SET time_zone = "+08:00";
 
-CREATE DATABASE IF NOT EXISTS `rental` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-USE `rental`;
+-- CREATE DATABASE IF NOT EXISTS `rental` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+-- USE `rental`;
 
 DROP TABLE IF EXISTS `rental`;
 CREATE TABLE IF NOT EXISTS `rental` (
@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS `rental` (
   PRIMARY KEY (`rentalId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `rental` (`rentalId`, `status`, `userId`, `address`, `carModel`,`carMake`,`capacity`,`carPlate`) VALUES
-(1, 'open', '2', '520709', 'Honda', 'HondaWow', 1, '12345678');
+-- INSERT INTO `rental` (`rentalId`, `status`, `userId`, `address`, `carModel`,`carMake`,`capacity`,`carPlate`) VALUES
+-- (1, 'open', '2', '520709', 'Honda', 'HondaWow', 1, '12345678');
 
 COMMIT;
