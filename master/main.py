@@ -17,20 +17,20 @@ CORS(app)
 
 # remember dont forget to change url if necessary and port no
 
-rental_update_URL = environ.get('rental_update_URL') or "http://rental:5002/rental/update" 
-rental_get_URL = environ.get('rental_get_URL') or "http://rental:5002/rental "
-payment_submit_URL = environ.get('payment_submit_URL') or "http://payment:4242/payment/rent" 
-payment_release_URL = environ.get('payment_release_URL') or "http://payment:4242/payment/return"
+rental_update_URL = environ.get('rental_update_URL') or "http://localhost:5002/rental/update" 
+rental_get_URL = environ.get('rental_get_URL') or "http://localhost:5002/rental/info "
+payment_submit_URL = environ.get('payment_submit_URL') or "http://localhost:5004/payment/rent" 
+payment_release_URL = environ.get('payment_release_URL') or "http://localhost:5004/payment/return"
 
-# remember dont forget to change excahnge name
+# # remember dont forget to change excahnge name
 exchangename = environ.get('exchangename') or "master_topic" 
 exchangetype = environ.get('exchangetype') or "topic" 
 
-#create a connection and a channel to the broker to publish messages to error, email queues
+# #create a connection and a channel to the broker to publish messages to error, email queues
 connection = amqp_connection.create_connection() 
 channel = connection.channel()
 
-#if the exchange is not yet created, exit the program
+# #if the exchange is not yet created, exit the program
 if not amqp_connection.check_exchange(channel, exchangename, exchangetype):
     print("\nCreate the 'Exchange' before running this microservice. \nExiting the program.")
     sys.exit(0)  # Exit with a success status
@@ -51,7 +51,7 @@ def rent_car():
             # 4) goes to rental(put) to change rental status
             # 5) goes to email(amqp) to alert owner 
             
-            #start get rental
+            # #start get rental
             rental_get = getRental(rental_request)
             current_code = rental_get['code']
             
@@ -60,7 +60,6 @@ def rent_car():
                 
                 return {
                     "code": current_code,
-                    
                     "message": "Failure at rental get service."
                 }
 
@@ -80,16 +79,29 @@ def rent_car():
 
             # start submit payment
             rental_id = rental_request['rentalId']
-            payment_post = submitPayment(rental_id)
+            payment_amount = rental_request['paymentAmt']
+            payer_id = rental_request['userId']
+            payee_id = rental_get['userId']
+
+            sub_pay = {
+                "rentalId": rental_id,
+                "paymentAmt": payment_amount,
+                "payerId": payer_id,
+                "payeeId": payee_id
+            }
+
+
+
+            payment_post = submitPayment(sub_pay)
             current_code = payment_post['code']
 
+            # print(payment_post)
             if current_code not in range(200, 300):
                 #no need send to error amqp as its done already and return stuff here
-                
                 return {
                     "code": current_code,
                     
-                    "message": "Failure at submit payment service."
+                    "message": "Failure at payment submit"
                 }
 
             # start rental put
@@ -122,7 +134,7 @@ def rent_car():
             # renturn everything success
             return {
                 "code": 200,
-                "message": "Everything was a success car is rented!"
+                "message": "Everything is a success, car is rented"
 
             }
             
@@ -259,12 +271,11 @@ def return_car():
     }), 400
 
 # function to connect to payment service to submit payment
-def submitPayment(rental_request):
+def submitPayment(sub_pay):
     print('\n-----Invoking payment microservice-----')
     current_service = 'payment'
-    payment_result = invoke_http(payment_submit_URL, method='POST', json=rental_request) 
+    payment_result = invoke_http(payment_submit_URL, method='POST', json=sub_pay) 
     print('payment_result:', payment_result)
-
     # Check the payment result; if a failure, send it to the error microservice.
     code = payment_result["code"]
 

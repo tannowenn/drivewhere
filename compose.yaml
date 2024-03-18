@@ -11,7 +11,7 @@ services:
   master:
     build:
       context: ./master
-      dockerfile: master.Dockerfile
+      dockerfile: Dockerfile
     image: ryan2409/master:esd
     restart: always
     # depends_on:
@@ -24,11 +24,10 @@ services:
     environment:
       rabbit_host: rabbitmq
       rabbit_port: 5672
-      # rental_get_URL: http://rental:5002/rental 
-      # rental_create_URL: http://rental:5002/rental/create 
+      # rental_get_URL: http://rental:5002/rental/info 
       # rental_update_URL: http://rental:5002/rental/update 
-      # payment_submit_URL: http://payment:4242/payment/rent
-      # payment_release_URL: http://payment:4242/payment/return
+      # payment_submit_URL: http://payment:5004/payment/rent
+      # payment_release_URL: http://payment:5004/payment/return
       PYTHONUNBUFFERED: 1
     ports:
       - "5100:5100"
