@@ -88,8 +88,19 @@ def get_rental_info():
 def create_rental_listing():
     data = request.get_json()
     listing = Rental(**data)
-
     try:
+        try:
+            gmaps = googlemaps.Client(key=Api_key)
+            source = '520709'
+            destination = listing.address
+            direction_result = gmaps.directions(source,destination)
+        except:
+            return jsonify(
+                {
+                "code": 500,
+                "message": "Please enter a valid postal code"
+                }
+            ), 500
         db.session.add(listing)
         db.session.commit()
     except:
