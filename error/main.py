@@ -1,86 +1,87 @@
 #!/usr/bin/env python3
-import error.amqp_connection as amqp_connection
+import amqp_connection
 import json
 import pika
-#from os import environ
-
 from os import environ
 import os
-from flask import Flask, request, jsonify
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-
 from datetime import datetime
+from flask import current_app
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root@localhost:3306/error'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root:root@localhost:3306/error'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-
 db = SQLAlchemy(app)
-
-CORS(app)  
 
 class Error(db.Model):
     __tablename__ = 'error'
 
     error_id = db.Column(db.Integer, primary_key=True)
-    errorMsg = db.Column(db.String(32), nullable=False)
+    code = db.Column(db.Integer, nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    service = db.Column(db.String(32), nullable=False)
     date_time = db.Column(db.DateTime, nullable=False, default=datetime.now)
 
-    def __init__(self, error_id, errorMsg, date_time):
-        self.error_id = error_id
-        self.errorMsg = errorMsg
-        self.date_time = date_time
+    def __init__(self, code, message, service):
+        self.code = code
+        self.message = message
+        self.service = service
 
     def json(self):
-        dto = {
+        return {
             'error_id': self.error_id,
-            'errorMsg': self.errorMsg,
+            'code': self.code,
+            'message': self.message,
+            'service': self.service,
             'date_time': self.date_time,
         }
 
-        return dto
-
-
-e_queue_name = environ.get('Error') or 'Error' #Error
+e_queue_name = environ.get('Error') or 'Error'
 
 def receiveError(channel):
     try:
-        # set up a consumer and start to wait for coming messages
         channel.basic_consume(queue=e_queue_name, on_message_callback=callback, auto_ack=True)
         print('error microservice: Consuming from queue:', e_queue_name)
-        channel.start_consuming() # an implicit loop waiting to receive messages; 
-        #it doesn't exit by default. Use Ctrl+C in the command window to terminate it.
-    
+        channel.start_consuming()
     except pika.exceptions.AMQPError as e:
         print(f"error microservice: Failed to connect: {e}") 
-
     except KeyboardInterrupt:
         print("error microservice: Program interrupted by user.")
 
-def callback(channel, method, properties, body): # required signature for the callback; no return
-    print("\nerror microservice: Received an error by " + __file__)
+def callback(channel, method, properties, body):
+    print("\nerror microservice: Received an error message")
     processError(body)
-    print()
 
-def processError(errorMsg):
-    print("error microservice: Printing the error message:")
+def processError(message):
     try:
-        error = json.loads(errorMsg)
-        print("--JSON:", error)
+        error_data = json.loads(message)
+        code = error_data.get('code')
+        message = error_data.get('message')
+        service = error_data.get('service')
+
+        if code is not None and message is not None and service is not None:
+            with app.app_context():
+                new_error = Error(code=code, message=message, service=service)
+                db.session.add(new_error)
+                db.session.commit()
+                print("error microservice: Error message stored in the database successfully.")
+        else: 
+            print("error microservice: One or more fields are missing or null, skipping database insertion.")
+
     except Exception as e:
-        print("--NOT JSON:", e)
-        print("--DATA:", errorMsg)
-    print()
+        print("error microservice: Failed to store error message in the database:", e)
 
-if __name__ == "__main__": # execute this program only if it is run as a script (not by 'import')   
-    print("This is flask for " + os.path.basename(__file__) + ": error ...")
-    app.run(host='0.0.0.0', port=5001, debug=True)
+if __name__ == "__main__":
+    from threading import Thread
 
-    print("error microservice: Getting Connection")
-    connection = amqp_connection.create_connection() #get the connection to the broker
-    print("error microservice: Connection established successfully")
-    channel = connection.channel()
-    receiveError(channel)
+    web_server_thread = Thread(target=app.run, kwargs={"host":"0.0.0.0", "port":5005})
+    web_server_thread.start()
 
+    with app.app_context():
+        print("error microservice: Getting Connection")
+        connection = amqp_connection.create_connection()
+        print("error microservice: Connection established successfully")
+        channel = connection.channel()
+        receiveError(channel)
+    

@@ -43,6 +43,7 @@ def create_connection(max_retries=12, retry_interval=5):
     
     return connection
 
+
 # function to check if the exchange exists
 def check_exchange(channel, exchangename, exchangetype):
     try:    

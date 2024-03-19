@@ -4,7 +4,7 @@ from os import environ
 
 hostname = "localhost" # default hostname
 port = 5672            # default port
-exchangename = "order_topic" # exchange name
+exchangename = "Error" # exchange name
 exchangetype = "topic" # - use a 'topic' exchange to enable interaction
 
 # Instead of hardcoding the values, we can also get them from the environ as shown below
@@ -13,7 +13,7 @@ exchangetype = "topic" # - use a 'topic' exchange to enable interaction
 # exchangename = environ.get('exchangename') #order_topic
 # exchangetype = environ.get('exchangetype') #topic
 # a_queue_name = environ.get('a_queue_name') #Activity_Log
-# e_queue_name = environ.get('e_queue_name') #Error
+e_queue_name = environ.get('e_queue_name') #Error
 
 #to create a connection to the broker
 def create_connection(max_retries=12, retry_interval=5):
@@ -68,11 +68,22 @@ def create_error_queue(channel):
     e_queue_name = 'Error'
     channel.queue_declare(queue=e_queue_name, durable=True) # 'durable' makes the queue survive broker restarts
     #bind Error queue
-    channel.queue_bind(exchange=exchangename, queue=e_queue_name, routing_key='*.error')
+    channel.queue_bind(exchange=exchangename, queue=e_queue_name, routing_key='#')
         # bind the queue to the exchange via the key
         # any routing_key with two words and ending with '.error' will be matched
 
-
+def check_exchange(channel, exchangename, exchangetype):
+    try:    
+        channel.exchange_declare(exchangename, exchangetype, durable=True, passive=True) 
+            # passive (bool): If set, the server will reply with Declare-Ok if the 
+            # exchange already exists with the same name, and raise an error if not. 
+            # The client can use this to check whether an exchange exists without 
+            # modifying the server state.            
+    except Exception as e:
+        print('Exception:', e)
+        return False
+    return True
+    
 if __name__ == "__main__":  # execute this program only if it is run as a script (not by 'import')   
     connection = create_connection()
     channel = create_channel(connection)
