@@ -22,7 +22,7 @@ payment_submit_URL = environ.get('payment_submit_URL') or "http://host.docker.in
 payment_release_URL = environ.get('payment_release_URL') or "http://host.docker.internal:5004/payment/return"
 
 # remember dont forget to change excahnge name
-exchangename = environ.get('exchangename') or "master_topic" 
+exchangename = environ.get('exchangename') or "Error" 
 exchangetype = environ.get('exchangetype') or "topic" 
 
 #create a connection and a channel to the broker to publish messages to error, email queues
