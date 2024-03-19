@@ -9,6 +9,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root@localhost:3306/rental'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+Api_key = environ.get("APIKEY") or 'AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE'
 
 db = SQLAlchemy(app)
 
@@ -40,7 +41,7 @@ def get_open_rental_listings():
         rental_dict = []
         for listing in rental_list:
             listing = listing.json()
-            gmaps = googlemaps.Client(key='AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE')
+            gmaps = googlemaps.Client(key=Api_key)
             source = data['address']
             destination = listing['address']
             direction_result = gmaps.directions(source,destination)
