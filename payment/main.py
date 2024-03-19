@@ -1,13 +1,15 @@
-# This example sets up an endpoint using the Flask framework.
-# Watch this video to get started: https://youtu.be/7Ul1vfmsDck.
 import os
 from dotenv import load_dotenv
 import stripe
 import math
 
-from flask import Flask, redirect, request, jsonify
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+
+# Define the target timezone
+target_timezone = timezone(timedelta(hours=8))
 
 # Load stripe test API key
 load_dotenv()
@@ -17,6 +19,7 @@ PAYMENT_FEE_FLAT = 0.5
 PAYMENT_PORT = 5004
 
 app = Flask(__name__)
+CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('dbURL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -30,9 +33,9 @@ class Payment(db.Model):
     payeeId = db.Column(db.String(32), nullable=False)
     amountSgd = db.Column(db.Float(precision=2), nullable=False)
     status = db.Column(db.String(10), nullable=False)
-    created = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.now().astimezone(target_timezone))
     modified = db.Column(db.DateTime, nullable=False,
-                         default=datetime.now, onupdate=datetime.now)
+                         default=datetime.now().astimezone(target_timezone), onupdate=datetime.now().astimezone(target_timezone))
 
     def json(self):
         return {"paymentId": self.paymentId, "rentalId": self.rentalId, "payerId": self.payerId, "payeeId": self.payeeId, "amountSgd": self.amountSgd, "status": self.status, "created": self.created, "modified": self.modified}
@@ -70,14 +73,19 @@ def success():
 
 @app.route('/payment/cancel')
 def cancel():
-    return "PAYMENT CANCELLED"
+    return jsonify(
+        {
+            "code": 200,
+            "message": "Payment has been cancelled"
+        }
+    ), 200
 
-# Remember to turn off Automatically follow redirects in Postman settings
 # Use card number 4000003720000278 to ensure balance goes directly to stripe account
 @app.route('/payment/rent', methods=['POST'])
 def rent_car():
     try:
         body = request.get_json()
+
         session = stripe.checkout.Session.create(
             line_items=[{
                 'price_data': {
@@ -90,17 +98,17 @@ def rent_car():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://localhost:PAYMENT_PORT/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}"+'&session_id={CHECKOUT_SESSION_ID}',
-            cancel_url='http://localhost:PAYMENT_PORT/payment/cancel',
+            success_url=f"http://localhost:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=f'http://localhost:{PAYMENT_PORT}/payment/cancel',
         )
 
-        return redirect(session.url, code=303)
+        return jsonify(session)
     
     except Exception as e:
         return jsonify(
             {
                 "code": 500,
-                "message": "An error occurred while proceeding to checkout. " + str(e)
+                "message": "An error occurred while proceeding to payment. " + str(e)
             }
         ), 500
 
@@ -136,7 +144,7 @@ def return_car():
         release_amt = release_amt * (1-PAYMENT_FEE_PCT) - PAYMENT_FEE_FLAT
         release_amt = math.floor(release_amt * 100)
         
-        transfer = stripe.Transfer.create(
+        stripe.Transfer.create(
             amount=release_amt,
             currency="sgd",
             destination=body['stripeId'],
