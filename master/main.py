@@ -335,10 +335,20 @@ def releasePayment(rental_request):
 
 # error handling function that is resused to save code
 def errorHandling(result, code, current_service):
+    print('\n\n-----Invoking error handling-----')
+    co_de = result['code']
+    mes_sage = result['message']  
+
+    result = {
+        'code': co_de,
+        'message': mes_sage,
+        'service': current_service
+    }
+
     message = json.dumps(result)
+    print(message)
     channel.basic_publish(exchange=exchangename, routing_key=current_service+".error", 
         body=message, properties=pika.BasicProperties(delivery_mode = 2))
-
     print("\nservice status ({:d}) published to the RabbitMQ Exchange:".format(
         code), result)
 
@@ -365,7 +375,7 @@ def getRental(sendData):
     code = rental_service_result["code"]
     if code not in range(200, 300):
         #send to error amqp and return stuff here
-        # errorHandling(rental_service_result, code, current_service)
+        errorHandling(rental_service_result, code, current_service)
         #below is return stuff instead of final return stuff
         return {
             "code": code,
@@ -386,7 +396,7 @@ def updateRental(update_request):
     code = rental_service_result["code"]
     if code not in range(200, 300):
         #send to error amqp and return stuff here
-        # errorHandling(rental_service_result, code, current_service)
+        errorHandling(rental_service_result, code, current_service)
        
         return {
             "code": code,
