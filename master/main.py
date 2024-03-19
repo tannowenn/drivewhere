@@ -15,11 +15,11 @@ app = Flask(__name__)
 CORS(app)
 
 
-rental_update_URL = environ.get('rental_update_URL') or "http://localhost:5002/rental/update" 
-rental_get_URL = environ.get('rental_get_URL') or "http://localhost:5002/rental/info"
+rental_update_URL = environ.get('rental_update_URL') or "http://host.docker.internal:5002/rental/update" 
+rental_get_URL = environ.get('rental_get_URL') or "http://host.docker.internal:5002/rental/info"
 
-payment_submit_URL = environ.get('payment_submit_URL') or "http://localhost:5004/payment/rent" 
-payment_release_URL = environ.get('payment_release_URL') or "http://localhost:5004/payment/return"
+payment_submit_URL = environ.get('payment_submit_URL') or "http://host.docker.internal:5004/payment/rent" 
+payment_release_URL = environ.get('payment_release_URL') or "http://host.docker.internal:5004/payment/return"
 
 # remember dont forget to change excahnge name
 exchangename = environ.get('exchangename') or "master_topic" 
@@ -411,7 +411,7 @@ def getUser(owner_id):
     current_service = "user"
 
     print('\n\n-----Invoking user microservice-----')    
-    user_URL = f"http://user:5001/user/{owner_id}" 
+    user_URL = f"http://host.docker.internal:5001/user/{owner_id}" 
     
     user_service_result = invoke_http(
         user_URL, method="GET")
