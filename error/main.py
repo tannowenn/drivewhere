@@ -10,7 +10,7 @@ from datetime import datetime
 from flask import current_app
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root@localhost:3306/error'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://is213@host.docker.internal:3306/error'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -37,7 +37,7 @@ class Error(db.Model):
             'date_time': self.date_time,
         }
 
-e_queue_name = environ.get('Error') or 'Error'
+e_queue_name = environ.get('e_queue_name') or 'Error'
 
 def receiveError(channel):
     try:
