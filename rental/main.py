@@ -27,8 +27,6 @@ class Rental(db.Model):
     carPlate = db.Column(db.String(16),nullable=False)
 
 
-
-
     def json(self):
         return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate}
 
