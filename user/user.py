@@ -17,16 +17,19 @@ class User(db.Model):
     name = db.Column(db.String(64), nullable=False)
     emailAddress = db.Column(db.String(64), nullable=False)
     phoneNum = db.Column(db.String(64))
+    stripeId = db.Column(db.String(64))
 
 
-    def __init__(self, name, emailAddress, phoneNum):
+    def __init__(self, name, emailAddress, phoneNum, stripeId):
         self.name = name
         self.emailAddress = emailAddress
         self.phoneNum = phoneNum
+        self.stripeId = stripeId
 
 
     def json(self):
-        return {"name": self.name, "emailAddress": self.emailAddress, "phoneNum": self.phoneNum}
+        return {"name": self.name, "emailAddress": self.emailAddress, "phoneNum": self.phoneNum,
+        "stripeId": self.stripeId}
 
 @app.route("/user")
 def get_all():
