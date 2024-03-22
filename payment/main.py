@@ -102,7 +102,12 @@ def rent_car():
             cancel_url=f'http://localhost:{PAYMENT_PORT}/payment/cancel',
         )
 
-        return jsonify(session)
+        return jsonify(
+            {
+                "code": 200,
+                "session": session
+            }
+        ), 200
     
     except Exception as e:
         return jsonify(
