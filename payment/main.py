@@ -73,7 +73,6 @@ def success():
 def cancel():
     return invoke_http(url=master_continue_URL, method='GET')
 
-# Use card number 4000003720000278 to ensure balance goes directly to stripe account
 @app.route('/payment/rent', methods=['POST'])
 def rent_car():
     try:
