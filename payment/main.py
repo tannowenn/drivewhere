@@ -58,15 +58,16 @@ def success():
     payee_id = request.args.get('payee_id')
         
     payment = Payment(rentalId=rental_id, payerId=payer_id, payeeId=payee_id, amountSgd=payment_amount/100, status="hold")
+    headers = {"Content-Type": "application/json"}
     try:
         db.session.add(payment)
         db.session.commit()
         json_data = {"code": 201, "data": payment.json()}
-        return invoke_http(url=master_continue_URL, method='POST', json=json_data)
+        return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
 
     except Exception as e:
         json_data = {"code": 500, "message": "An error occurred while processing payment. " + str(e)}
-        return invoke_http(url=master_continue_URL, method='POST', json=json_data)
+        return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
 
 @app.route('/payment/cancel')
 def cancel():
