@@ -18,6 +18,7 @@ stripe.api_key = os.getenv('STRIPE_KEY')
 
 # Global variables
 master_continue_URL = os.environ.get('master_continue_URL') or "http://host.docker.internal:5100/master/rental/continue"
+master_cancel_URL = os.environ.get('master_cancel_URL') or "http://host.docker.internal:5100/master/rental/cancel"
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
 PAYMENT_PORT = 5004
@@ -69,12 +70,7 @@ def success():
 
 @app.route('/payment/cancel')
 def cancel():
-    return jsonify(
-        {
-            "code": 200,
-            "message": "Payment has been cancelled"
-        }
-    ), 200
+    return invoke_http(url=master_continue_URL, method='GET')
 
 # Use card number 4000003720000278 to ensure balance goes directly to stripe account
 @app.route('/payment/rent', methods=['POST'])
