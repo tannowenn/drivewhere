@@ -22,7 +22,7 @@ payment_submit_URL = environ.get('payment_submit_URL') or "http://host.docker.in
 payment_release_URL = environ.get('payment_release_URL') or "http://host.docker.internal:5004/payment/return"
 
 # remember dont forget to change excahnge name
-exchangename = environ.get('exchangename') or "Error" 
+exchangename = environ.get('exchangename') or "drivewhere_topic" 
 exchangetype = environ.get('exchangetype') or "topic" 
 
 #create a connection and a channel to the broker to publish messages to error, email queues
@@ -286,52 +286,52 @@ def return_car():
         "message": "Invalid JSON input: " + str(request.get_data())
     }), 400
 
-# function to connect to payment service to submit payment
-def submitPayment(sub_pay):
-    print('\n-----Invoking payment microservice-----')
-    current_service = 'payment'
-    payment_result = invoke_http(payment_submit_URL, method='POST', json=sub_pay) 
-    print('payment_result:', payment_result)
-    # Check the payment result; if a failure, send it to the error microservice.
-    code = payment_result["code"]
-
-    if code not in range(200, 300):
-        # Inform the error microservice
-        #print('\n\n-----Invoking error microservice as payment fails-----')
-        print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
-
-        errorHandling(payment_result, code, current_service)
-        
-        return {
-        "code": code,
-        "data": payment_result,
-    }
-    else:
-        return payment_result
-
 # # function to connect to payment service to submit payment
-# def releasePayment(rental_request):
+# def submitPayment(sub_pay):
 #     print('\n-----Invoking payment microservice-----')
 #     current_service = 'payment'
-#     payment_result = invoke_http(payment_release_URL, method='POST', json=rental_request)
+#     payment_result = invoke_http(payment_submit_URL, method='POST', json=sub_pay) 
 #     print('payment_result:', payment_result)
-
 #     # Check the payment result; if a failure, send it to the error microservice.
 #     code = payment_result["code"]
-    
+
 #     if code not in range(200, 300):
 #         # Inform the error microservice
 #         #print('\n\n-----Invoking error microservice as payment fails-----')
 #         print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
 
 #         errorHandling(payment_result, code, current_service)
-
+        
 #         return {
 #         "code": code,
 #         "data": payment_result,
 #     }
 #     else:
 #         return payment_result
+
+# # function to connect to payment service to submit payment
+# def releasePayment(rental_request):
+    print('\n-----Invoking payment microservice-----')
+    current_service = 'payment'
+    payment_result = invoke_http(payment_release_URL, method='POST', json=rental_request)
+    print('payment_result:', payment_result)
+
+    # Check the payment result; if a failure, send it to the error microservice.
+    code = payment_result["code"]
+    
+    if code not in range(200, 300):
+        # Inform the error microservice
+        #print('\n\n-----Invoking error microservice as payment fails-----')
+        print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
+
+        errorHandling(payment_result, code, current_service)
+
+        return {
+        "code": code,
+        "data": payment_result,
+    }
+    else:
+        return payment_result
 
 # error handling function that is resused to save code
 def errorHandling(result, code, current_service):
