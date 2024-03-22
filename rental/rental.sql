@@ -3,8 +3,8 @@
 -- START TRANSACTION;
 -- SET time_zone = "+08:00";
 
--- CREATE DATABASE IF NOT EXISTS `rental` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
--- USE `rental`;
+CREATE DATABASE IF NOT EXISTS `rental` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE `rental`;
 
 DROP TABLE IF EXISTS `rental`;
 CREATE TABLE IF NOT EXISTS `rental` (
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS `rental` (
   `carMake` varchar(255) NOT NULL,
   `capacity` INT NOT NULL,
   `carPlate` varchar(16) NOT NULL,
-  `pricePerDay` decimal(10, 2) NOT NULL
+  `pricePerDay` decimal(10, 2) NOT NULL,
   PRIMARY KEY (`rentalId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

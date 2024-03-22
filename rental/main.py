@@ -69,7 +69,7 @@ def get_rental_info():
     if rental_list:
         userId = rental_list.userId
         Amount = rental_list.pricePerDay
-        PaymentAmount = Amount * data['pricePerDay']
+        PaymentAmount = float(Amount) * float(data['days'])
         return jsonify(
             {
                 "code": 200,
