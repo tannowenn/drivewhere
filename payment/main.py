@@ -19,6 +19,7 @@ stripe.api_key = os.getenv('STRIPE_KEY')
 # Global variables
 master_continue_URL = os.environ.get('master_continue_URL') or "http://host.docker.internal:5100/master/rental/continue"
 master_cancel_URL = os.environ.get('master_cancel_URL') or "http://host.docker.internal:5100/master/rental/cancel"
+COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
 PAYMENT_PORT = 5004
@@ -138,7 +139,7 @@ def return_car():
             ), 400
 
         release_amt = payment.amountSgd
-        release_amt = release_amt * (1-PAYMENT_FEE_PCT) - PAYMENT_FEE_FLAT
+        release_amt = (release_amt * (1-PAYMENT_FEE_PCT) - PAYMENT_FEE_FLAT) * (1-COMMISSION_PCT)
         release_amt = math.floor(release_amt * 100)
         
         stripe.Transfer.create(
