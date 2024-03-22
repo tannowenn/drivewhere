@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import stripe
 import math
 
+from invokes import invoke_http
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -59,20 +60,12 @@ def success():
     try:
         db.session.add(payment)
         db.session.commit()
-        return jsonify(
-            {
-                "code": 201,
-                "data": payment.json()
-            }
-        ), 201
+        json_data = {"code": 201, "data": payment.json()}
+        return invoke_http(url=master_continue_URL, method='POST', json=json_data)
 
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred while processing payment. " + str(e)
-            }
-        ), 500
+        json_data = {"code": 500, "message": "An error occurred while processing payment. " + str(e)}
+        return invoke_http(url=master_continue_URL, method='POST', json=json_data)
 
 @app.route('/payment/cancel')
 def cancel():
