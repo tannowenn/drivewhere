@@ -22,7 +22,7 @@ payment_submit_URL = environ.get('payment_submit_URL') or "http://host.docker.in
 payment_release_URL = environ.get('payment_release_URL') or "http://host.docker.internal:5004/payment/return"
 
 # remember dont forget to change excahnge name
-exchangename = environ.get('exchangename') or "Error" 
+exchangename = environ.get('exchangename') or "drivewhere_topic" 
 exchangetype = environ.get('exchangetype') or "topic" 
 
 #create a connection and a channel to the broker to publish messages to error, email queues
@@ -70,7 +70,7 @@ def rent_car():
                     "message": "Failure at rental get service."
                 }
             ownerId = rental_get['data']['userId']
-
+            
             # starting get user
             user_get = getUser(ownerId)
             current_code = user_get['code']
@@ -84,25 +84,25 @@ def rent_car():
                     "message": "Failure at user get service."
                 }
             email_address = user_get['data']['emailAddress']
-            
-            # start submit payment
-            sub_pay = {
-                "rentalId": rentalId,
-                "paymentAmt": paymentAmt,
-                "payerId": renterID,
-                "payeeId": ownerId
-            }
+            print(email_address)
+            # # start submit payment
+            # sub_pay = {
+            #     "rentalId": rentalId,
+            #     "paymentAmt": paymentAmt,
+            #     "payerId": renterID,
+            #     "payeeId": ownerId
+            # }
 
-            payment_post = submitPayment(sub_pay)
-            current_code = payment_post['code']
+            # payment_post = submitPayment(sub_pay)
+            # current_code = payment_post['code']
 
-            if current_code not in range(200, 300):
-                #no need send to error amqp as its done already and return stuff here
-                return {
-                    "code": current_code,
-                    "data": payment_post["data"],
-                    "message": "Failure at payment submit"
-                }
+            # if current_code not in range(200, 300):
+            #     #no need send to error amqp as its done already and return stuff here
+            #     return {
+            #         "code": current_code,
+            #         "data": payment_post["data"],
+            #         "message": "Failure at payment submit"
+            #     }
 
 
             # start rental put
@@ -123,18 +123,18 @@ def rent_car():
                     "message": "Failure at rental put service."
                 }
 
-            # start email amqp
-            email_amqp = email(email_address)
-            current_code = email_amqp['code']
+            # # start email amqp
+            # email_amqp = email(email_address)
+            # current_code = email_amqp['code']
 
-            if current_code not in range(200, 300):
-                #no need send to error amqp as its done already and return stuff here
+            # if current_code not in range(200, 300):
+            #     #no need send to error amqp as its done already and return stuff here
                 
-                return {
-                    "code": current_code,
+            #     return {
+            #         "code": current_code,
             
-                    "message": "Failure at email service."
-                }
+            #         "message": "Failure at email service."
+            #     }
 
             # renturn everything success
             return {
@@ -213,22 +213,22 @@ def return_car():
             email_address = user_get['data']['emailAddress']
             stripeId =  user_get['data']['stripeId']
 
-            # start release payment
-            payment_info = {
-                "rentalId": rentalId,
-                "stripeId": stripeId
-            }
-            payment_post = releasePayment(payment_info)
-            current_code = payment_post['code']
+            # # start release payment
+            # payment_info = {
+            #     "rentalId": rentalId,
+            #     "stripeId": stripeId
+            # }
+            # payment_post = releasePayment(payment_info)
+            # current_code = payment_post['code']
 
-            if current_code not in range(200, 300):
-                #no need send to error amqp as its done already and return stuff here
+            # if current_code not in range(200, 300):
+            #     #no need send to error amqp as its done already and return stuff here
                 
-                return {
-                    "code": current_code,
-                    "data": payment_post,
-                    "message": "Failure at release payment service."
-                }
+            #     return {
+            #         "code": current_code,
+            #         "data": payment_post,
+            #         "message": "Failure at release payment service."
+            #     }
 
             # start rental put
             sendData2 = {
@@ -248,18 +248,18 @@ def return_car():
                     "message": "Failure at rental put service."
                 }
 
-            # start email amqp
-            email_amqp = email(email_address)
-            current_code = email_amqp['code']
+            # # start email amqp
+            # email_amqp = email(email_address)
+            # current_code = email_amqp['code']
 
-            if current_code not in range(200, 300):
-                #no need send to error amqp as its done already and return stuff here
+            # if current_code not in range(200, 300):
+            #     #no need send to error amqp as its done already and return stuff here
                 
-                return {
-                    "code": current_code,
+            #     return {
+            #         "code": current_code,
                     
-                    "message": "Failure at email service."
-                }
+            #         "message": "Failure at email service."
+            #     }
 
             # return everything success
             return {
@@ -286,31 +286,31 @@ def return_car():
         "message": "Invalid JSON input: " + str(request.get_data())
     }), 400
 
-# function to connect to payment service to submit payment
-def submitPayment(sub_pay):
-    print('\n-----Invoking payment microservice-----')
-    current_service = 'payment'
-    payment_result = invoke_http(payment_submit_URL, method='POST', json=sub_pay) 
-    print('payment_result:', payment_result)
-    # Check the payment result; if a failure, send it to the error microservice.
-    code = payment_result["code"]
+# # function to connect to payment service to submit payment
+# def submitPayment(sub_pay):
+#     print('\n-----Invoking payment microservice-----')
+#     current_service = 'payment'
+#     payment_result = invoke_http(payment_submit_URL, method='POST', json=sub_pay) 
+#     print('payment_result:', payment_result)
+#     # Check the payment result; if a failure, send it to the error microservice.
+#     code = payment_result["code"]
 
-    if code not in range(200, 300):
-        # Inform the error microservice
-        #print('\n\n-----Invoking error microservice as payment fails-----')
-        print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
+#     if code not in range(200, 300):
+#         # Inform the error microservice
+#         #print('\n\n-----Invoking error microservice as payment fails-----')
+#         print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
 
-        errorHandling(payment_result, code, current_service)
+#         errorHandling(payment_result, code, current_service)
         
-        return {
-        "code": code,
-        "data": payment_result,
-    }
-    else:
-        return payment_result
+#         return {
+#         "code": code,
+#         "data": payment_result,
+#     }
+#     else:
+#         return payment_result
 
-# function to connect to payment service to submit payment
-def releasePayment(rental_request):
+# # function to connect to payment service to submit payment
+# def releasePayment(rental_request):
     print('\n-----Invoking payment microservice-----')
     current_service = 'payment'
     payment_result = invoke_http(payment_release_URL, method='POST', json=rental_request)
@@ -411,10 +411,10 @@ def getUser(owner_id):
     current_service = "user"
 
     print('\n\n-----Invoking user microservice-----')    
-    user_URL = f"http://host.docker.internal:5001/user/{owner_id}" 
+    user_URL = f"http://user:5001/user/{owner_id}" 
     
     user_service_result = invoke_http(
-        user_URL, method="GET")
+        user_URL, method="GET", json={})
     
     print("user_status_result:", user_service_result, '\n')
 
@@ -431,17 +431,17 @@ def getUser(owner_id):
     else:
         return user_service_result
     
-# function for email
-def email(email_address):
-    # invoking amqp for email
-    message = json.dumps(email_address)
+# # function for email
+# def email(email_address):
+#     # invoking amqp for email
+#     message = json.dumps(email_address)
 
-    channel.basic_publish(exchange=exchangename, routing_key="email.alert", body=message, properties=pika.BasicProperties(delivery_mode = 2))
-    # remember to ask if theres error for email amqp
-    # remember to ask what routing key for email
+#     channel.basic_publish(exchange=exchangename, routing_key="email.alert", body=message, properties=pika.BasicProperties(delivery_mode = 2))
+#     # remember to ask if theres error for email amqp
+#     # remember to ask what routing key for email
 
-    #remember how to determine if email success
-    #remember will email service return anything?
+#     #remember how to determine if email success
+#     #remember will email service return anything?
 
 
 if __name__ == "__main__":

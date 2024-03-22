@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:root@localhost:8889/user'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://is213@host.docker.internal:3306/user'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
@@ -17,16 +17,19 @@ class User(db.Model):
     name = db.Column(db.String(64), nullable=False)
     emailAddress = db.Column(db.String(64), nullable=False)
     phoneNum = db.Column(db.String(64))
+    stripeId = db.Column(db.String(64))
 
 
-    def __init__(self, name, emailAddress, phoneNum):
+    def __init__(self, name, emailAddress, phoneNum, stripeId):
         self.name = name
         self.emailAddress = emailAddress
         self.phoneNum = phoneNum
+        self.stripeId = stripeId
 
 
     def json(self):
-        return {"name": self.name, "emailAddress": self.emailAddress, "phoneNum": self.phoneNum}
+        return {"name": self.name, "emailAddress": self.emailAddress, "phoneNum": self.phoneNum,
+        "stripeId": self.stripeId}
 
 @app.route("/user")
 def get_all():
@@ -105,6 +108,6 @@ def create_user():
 
 
 if __name__ == '__main__':
-    app.run(port=5001, debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
 
 
