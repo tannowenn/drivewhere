@@ -14,6 +14,9 @@ target_timezone = timezone(timedelta(hours=8))
 # Load stripe test API key
 load_dotenv()
 stripe.api_key = os.getenv('STRIPE_KEY')
+
+# Global variables
+master_continue_URL = os.environ.get('master_continue_URL') or "http://host.docker.internal:5100/master/rental/continue"
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
 PAYMENT_PORT = 5004
