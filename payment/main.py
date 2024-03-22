@@ -63,7 +63,7 @@ def success():
     try:
         db.session.add(payment)
         db.session.commit()
-        json_data = {"code": 201, "data": {"emailAddress": request.args.get('email_address')}}
+        json_data = {"code": 201, "data": {"emailAddress": request.args.get('email_address'), "rentalId": rental_id}}
         return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
 
     except Exception as e:
