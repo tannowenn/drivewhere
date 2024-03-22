@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 from flask_cors import CORS
 
 import os, sys
@@ -51,12 +51,13 @@ def rent_car():
             # 5) goes to email(amqp) to alert owner 
 
             renterID = rental_request["userId"]
-            paymentAmt = rental_request["paymentAmt"]
+            days = rental_request["days"]
             rentalId = rental_request["rentalId"]
             
             #start get rental
             sendData = {
-                "rentalId":rentalId
+                "rentalId":rentalId,
+                "days": days
             }
             rental_get = getRental(sendData)
             current_code = rental_get['code']
@@ -70,7 +71,8 @@ def rent_car():
                     "message": "Failure at rental get service."
                 }
             ownerId = rental_get['data']['userId']
-            
+            paymentAmt = int(rental_get['data']['PaymentAmount'])
+
             # starting get user
             user_get = getUser(ownerId)
             current_code = user_get['code']
@@ -83,27 +85,73 @@ def rent_car():
                     "data": user_get["data"],
                     "message": "Failure at user get service."
                 }
+            
             email_address = user_get['data']['emailAddress']
             print(email_address)
-            # # start submit payment
-            # sub_pay = {
-            #     "rentalId": rentalId,
-            #     "paymentAmt": paymentAmt,
-            #     "payerId": renterID,
-            #     "payeeId": ownerId
-            # }
 
-            # payment_post = submitPayment(sub_pay)
-            # current_code = payment_post['code']
+            # start submit payment
+            sub_pay = {
+                "rentalId": rentalId,
+                "paymentAmt": paymentAmt,
+                "payerId": renterID,
+                "payeeId": ownerId,
+                "emailAddress": email_address 
+            }
 
-            # if current_code not in range(200, 300):
-            #     #no need send to error amqp as its done already and return stuff here
-            #     return {
-            #         "code": current_code,
-            #         "data": payment_post["data"],
-            #         "message": "Failure at payment submit"
-            #     }
+            payment_post = submitPayment(sub_pay)
+            current_code = payment_post['code']
+            
+            if current_code not in range(200, 399):
+                #no need send to error amqp as its done already and return stuff here
+                return{
+                    "code": current_code,
+                    "data": payment_post["data"],
+                    "message": "Failure at payment submit"
+                }
+            else:
+                print("\nSending to the checkout page now")
+                return redirect(payment_post['redirect_url'], 303)
+            
+        except Exception as e:
+            # Unexpected error in code
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
+            print(ex_str)
 
+            return jsonify({
+                "code": 500,
+                "message": "master/main.py internal error: " + ex_str
+            }), 500
+
+    # if reached here, not a JSON request.
+    return jsonify({
+        "code": 400,
+        "message": "Invalid JSON input: " + str(request.get_data())
+    }), 400
+
+# continued scenario 2
+@app.route("/master/rental/continue", methods=['POST'])
+def continued():
+    if request.is_json:
+        try:
+            continue_request = request.get_json()
+            print("\nContinuing rental_request in JSON:", continue_request)
+
+            current_code = continue_request['code']
+            payment_post2 = continue_request['data']
+
+            if current_code not in range(200, 399):
+                #no need send to error amqp as its done already and return stuff here
+                errorHandling(payment_post2, current_code, "payment")
+                return{
+                    "code": current_code,
+                    "data": payment_post2,
+                    "message": "Failure at payment submit"
+                }
+            
+            rentalId = payment_post2['rentalId']
+            email_address = payment_post2['emailAddress']
 
             # start rental put
             sendData2 = {
@@ -161,7 +209,7 @@ def rent_car():
         "code": 400,
         "message": "Invalid JSON input: " + str(request.get_data())
     }), 400
-
+    
 # for user scenario 3
 @app.route("/master/rental/update", methods=['PUT'])
 def return_car():
@@ -182,7 +230,8 @@ def return_car():
 
             #start rental get
             sendData = {
-                "rentalId":rentalId
+                "rentalId": rentalId,
+                "days": 0
             }
 
             rental_get = getRental(sendData)
@@ -213,22 +262,22 @@ def return_car():
             email_address = user_get['data']['emailAddress']
             stripeId =  user_get['data']['stripeId']
 
-            # # start release payment
-            # payment_info = {
-            #     "rentalId": rentalId,
-            #     "stripeId": stripeId
-            # }
-            # payment_post = releasePayment(payment_info)
-            # current_code = payment_post['code']
+            # start release payment
+            payment_info = {
+                "rentalId": rentalId,
+                "stripeId": stripeId
+            }
+            payment_post = releasePayment(payment_info)
+            current_code = payment_post['code']
 
-            # if current_code not in range(200, 300):
-            #     #no need send to error amqp as its done already and return stuff here
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
                 
-            #     return {
-            #         "code": current_code,
-            #         "data": payment_post,
-            #         "message": "Failure at release payment service."
-            #     }
+                return {
+                    "code": current_code,
+                    "data": payment_post,
+                    "message": "Failure at release payment service."
+                }
 
             # start rental put
             sendData2 = {
@@ -286,31 +335,38 @@ def return_car():
         "message": "Invalid JSON input: " + str(request.get_data())
     }), 400
 
-# # function to connect to payment service to submit payment
-# def submitPayment(sub_pay):
-#     print('\n-----Invoking payment microservice-----')
-#     current_service = 'payment'
-#     payment_result = invoke_http(payment_submit_URL, method='POST', json=sub_pay) 
-#     print('payment_result:', payment_result)
-#     # Check the payment result; if a failure, send it to the error microservice.
-#     code = payment_result["code"]
+# function to connect to payment service to submit payment
+def submitPayment(sub_pay):
+    print('\n-----Invoking payment microservice-----')
+    current_service = 'payment'
+    payment_result = invoke_http(payment_submit_URL, method='POST', json=sub_pay) 
+    print('payment_result:', payment_result)
+    # Check the payment result; if a failure, send it to the error microservice.
+    code = payment_result["code"]
+    redirect_url = payment_result['session']['url']
 
-#     if code not in range(200, 300):
-#         # Inform the error microservice
-#         #print('\n\n-----Invoking error microservice as payment fails-----')
-#         print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
+    if code not in range(200, 300):
+        # Inform the error microservice
+        #print('\n\n-----Invoking error microservice as payment fails-----')
+        print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
 
-#         errorHandling(payment_result, code, current_service)
+        errorHandling(payment_result, code, current_service)
         
-#         return {
-#         "code": code,
-#         "data": payment_result,
-#     }
-#     else:
-#         return payment_result
+        return {
+        "code": code,
+        "data": payment_result,
+    }
+    else:
+        # return redirect(payment_result["session"]["url"], 303)
+        # return redirect('https://www.google.com/', 303)     
+        return {
+            "code": code,
+            "redirect_url": redirect_url
+        }   
+        # return payment_result
 
-# # function to connect to payment service to submit payment
-# def releasePayment(rental_request):
+# function to connect to payment service to submit payment
+def releasePayment(rental_request):
     print('\n-----Invoking payment microservice-----')
     current_service = 'payment'
     payment_result = invoke_http(payment_release_URL, method='POST', json=rental_request)

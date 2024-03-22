@@ -29,6 +29,20 @@ services:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/rental
       PYTHONUNBUFFERED: 1
   ###############################################
+  # payment: The payment microservice
+  ###############################################
+  payment:
+    build:
+      context: ./payment
+      dockerfile: Dockerfile
+    image: ryan2409/payment:esd
+    restart: always
+    environment:
+      master_continue_URL: "http://master:5100/master/rental/continue"
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5004:5004"
+  ###############################################
   # rabbitMQ: The amqp
   ###############################################
   rabbitmq:
@@ -73,7 +87,7 @@ services:
     depends_on:
       - user
       - rental
-      # - payment
+      - payment
       - error
       # - email
       - rabbitmq
@@ -82,8 +96,8 @@ services:
       rabbit_port: 5672
       rental_get_URL: http://rental:5002/rental/info 
       rental_update_URL: http://rental:5002/rental/update 
-      # payment_submit_URL: http://payment:5004/payment/rent
-      # payment_release_URL: http://payment:5004/payment/return
+      payment_submit_URL: http://payment:5004/payment/rent
+      payment_release_URL: http://payment:5004/payment/return
       PYTHONUNBUFFERED: 1
     ports:
       - "5100:5100"

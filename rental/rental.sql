@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `rental` (
   PRIMARY KEY (`rentalId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- INSERT INTO `rental` (`rentalId`, `status`, `userId`, `address`, `carModel`,`carMake`,`capacity`,`carPlate`,`pricePerDay`) VALUES
--- (1, 'open', '2', '520709', 'Honda', 'HondaWow', 1, '12345678', 10.5);
+INSERT INTO `rental` (`rentalId`, `status`, `userId`, `address`, `carModel`,`carMake`,`capacity`,`carPlate`,`pricePerDay`) VALUES
+(1, 'open', '2', '520709', 'Honda', 'HondaWow', 1, '12345678', 10.5);
 
 COMMIT;
