@@ -25,10 +25,11 @@ class Rental(db.Model):
     carMake = db.Column(db.String(255),nullable=False)
     capacity = db.Column(db.Integer,nullable=False)
     carPlate = db.Column(db.String(16),nullable=False)
+    pricePerDay = db.Column(db.Float(precision=2), nullable=False)
 
 
     def json(self):
-        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate}
+        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate, "PricePerDay" : self.pricePerDay}
 
 
 @app.route("/rental")
@@ -67,11 +68,14 @@ def get_rental_info():
     rental_list = db.session.scalars(db.select(Rental).filter_by(rentalId = rentId).limit(1)).first()
     if rental_list:
         userId = rental_list.userId
+        Amount = rental_list.pricePerDay
+        PaymentAmount = Amount * data['pricePerDay']
         return jsonify(
             {
                 "code": 200,
                 "data": {
-                    "userId": userId
+                    "userId": userId,
+                    "PaymentAmount" : PaymentAmount
                 }
             }
         )

@@ -16,10 +16,11 @@ CREATE TABLE IF NOT EXISTS `rental` (
   `carMake` varchar(255) NOT NULL,
   `capacity` INT NOT NULL,
   `carPlate` varchar(16) NOT NULL,
+  `pricePerDay` decimal(10, 2) NOT NULL
   PRIMARY KEY (`rentalId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- INSERT INTO `rental` (`rentalId`, `status`, `userId`, `address`, `carModel`,`carMake`,`capacity`,`carPlate`) VALUES
--- (1, 'open', '2', '520709', 'Honda', 'HondaWow', 1, '12345678');
+INSERT INTO `rental` (`rentalId`, `status`, `userId`, `address`, `carModel`,`carMake`,`capacity`,`carPlate`,`pricePerDay`) VALUES
+(1, 'open', '2', '520709', 'Honda', 'HondaWow', 1, '12345678', 10.5);
 
 COMMIT;
