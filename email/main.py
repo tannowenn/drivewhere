@@ -1,20 +1,42 @@
-#!/usr/bin/env python3
 import amqp_connection
 import json
 import pika
+import ssl
+import smtplib
+
 from os import environ
+from email.message import EmailMessage
 
 # from flask import Flask, request, jsonify
 # from flask_cors import CORS
-# from flask_sqlalchemy import SQLAlchemy
+# from datetime import datetime
 
-from datetime import datetime
+GMAIL_APP_PASS = environ.get('GMAIL_APP_PASS')
+EMAIL_SENDER = "drivewhere1@gmail.com"
 
 # app = Flask(__name__)
 # CORS(app)
 
 a_queue_name = environ.get('a_queue_name') or 'Email' # queue to be subscribed by Email microservice
 
+def send_email(email_receiver, subject, body):
+    # email_receiver = "owen.tan.2022@scis.smu.edu.sg"
+    # subject = "TEST SUbejsdt"
+    # body = """
+    # Hello this is the test email abadljaladjbjalbjad@#$@!
+    # """
+
+    em = EmailMessage()
+    em['From'] = EMAIL_SENDER
+    em['To'] = email_receiver
+    em['Subject'] = subject
+    em.set_content(body)
+
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(EMAIL_SENDER, GMAIL_APP_PASS)
+        smtp.sendmail(EMAIL_SENDER, email_receiver, em.as_string())
 
 def receiveEmailAdd(channel):
     try:
@@ -41,7 +63,6 @@ def processEmailAdd(email):
         print(f"Email Address: {emailAdd}")
     else:
         print("Invalid JSON format. Missing 'code' or 'message' field.")
-    
 
 if __name__ == "__main__":  # execute this program only if it is run as a script (not by 'import')
     print("email address: Getting Connection")
