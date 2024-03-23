@@ -39,6 +39,8 @@ services:
     restart: always
     environment:
       master_continue_URL: "http://master:5100/master/rental/continue"
+      dbURL: "mysql+mysqlconnector://is213@host.docker.internal:3306/payment"
+      STRIPE_KEY: sk_test_51OuU6ERwhPaLZQ7Jc38nX5rpjYnhJbtspXQ5EMvskpjbnsDTotjrA1GciZZKFUyPBWwZnO0IGlVsdqmFWlX4Rgba000ObBunlu
       PYTHONUNBUFFERED: 1
     ports:
       - "5004:5004"
