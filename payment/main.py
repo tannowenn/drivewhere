@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import stripe
 import math
 
+from invokes import invoke_http
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -14,6 +15,11 @@ target_timezone = timezone(timedelta(hours=8))
 # Load stripe test API key
 load_dotenv()
 stripe.api_key = os.getenv('STRIPE_KEY')
+
+# Global variables
+master_continue_URL = os.environ.get('master_continue_URL') or "http://host.docker.internal:5100/master/rental/continue"
+master_cancel_URL = os.environ.get('master_cancel_URL') or "http://host.docker.internal:5100/master/rental/cancel"
+COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
 PAYMENT_PORT = 5004
@@ -53,34 +59,21 @@ def success():
     payee_id = request.args.get('payee_id')
         
     payment = Payment(rentalId=rental_id, payerId=payer_id, payeeId=payee_id, amountSgd=payment_amount/100, status="hold")
+    headers = {"Content-Type": "application/json"}
     try:
         db.session.add(payment)
         db.session.commit()
-        return jsonify(
-            {
-                "code": 201,
-                "data": payment.json()
-            }
-        ), 201
+        json_data = {"code": 201, "data": {"emailAddress": request.args.get('email_address'), "rentalId": rental_id}}
+        return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
 
     except Exception as e:
-        return jsonify(
-            {
-                "code": 500,
-                "message": "An error occurred while processing payment. " + str(e)
-            }
-        ), 500
+        json_data = {"code": 500, "message": "An error occurred while processing payment. " + str(e)}
+        return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
 
 @app.route('/payment/cancel')
 def cancel():
-    return jsonify(
-        {
-            "code": 200,
-            "message": "Payment has been cancelled"
-        }
-    ), 200
+    return invoke_http(url=master_continue_URL, method='GET')
 
-# Use card number 4000003720000278 to ensure balance goes directly to stripe account
 @app.route('/payment/rent', methods=['POST'])
 def rent_car():
     try:
@@ -98,11 +91,16 @@ def rent_car():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://localhost:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            success_url=f"http://localhost:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&email_address={body['emailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
             cancel_url=f'http://localhost:{PAYMENT_PORT}/payment/cancel',
         )
 
-        return jsonify(session)
+        return jsonify(
+            {
+                "code": 200,
+                "session": session
+            }
+        ), 200
     
     except Exception as e:
         return jsonify(
@@ -141,7 +139,7 @@ def return_car():
             ), 400
 
         release_amt = payment.amountSgd
-        release_amt = release_amt * (1-PAYMENT_FEE_PCT) - PAYMENT_FEE_FLAT
+        release_amt = (release_amt * (1-PAYMENT_FEE_PCT) - PAYMENT_FEE_FLAT) * (1-COMMISSION_PCT)
         release_amt = math.floor(release_amt * 100)
         
         stripe.Transfer.create(

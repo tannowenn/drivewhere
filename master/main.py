@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 from flask_cors import CORS
 
 import os, sys
@@ -22,7 +22,7 @@ payment_submit_URL = environ.get('payment_submit_URL') or "http://host.docker.in
 payment_release_URL = environ.get('payment_release_URL') or "http://host.docker.internal:5004/payment/return"
 
 # remember dont forget to change excahnge name
-exchangename = environ.get('exchangename') or "Error" 
+exchangename = environ.get('exchangename') or "drivewhere_topic" 
 exchangetype = environ.get('exchangetype') or "topic" 
 
 #create a connection and a channel to the broker to publish messages to error, email queues
@@ -51,12 +51,13 @@ def rent_car():
             # 5) goes to email(amqp) to alert owner 
 
             renterID = rental_request["userId"]
-            paymentAmt = rental_request["paymentAmt"]
+            days = rental_request["days"]
             rentalId = rental_request["rentalId"]
             
             #start get rental
             sendData = {
-                "rentalId":rentalId
+                "rentalId":rentalId,
+                "days": days
             }
             rental_get = getRental(sendData)
             current_code = rental_get['code']
@@ -70,6 +71,7 @@ def rent_car():
                     "message": "Failure at rental get service."
                 }
             ownerId = rental_get['data']['userId']
+            paymentAmt = int(rental_get['data']['PaymentAmount'])
 
             # starting get user
             user_get = getUser(ownerId)
@@ -83,27 +85,73 @@ def rent_car():
                     "data": user_get["data"],
                     "message": "Failure at user get service."
                 }
-            email_address = user_get['data']['emailAddress']
             
+            email_address = user_get['data']['emailAddress']
+            print(email_address)
+
             # start submit payment
             sub_pay = {
                 "rentalId": rentalId,
                 "paymentAmt": paymentAmt,
                 "payerId": renterID,
-                "payeeId": ownerId
+                "payeeId": ownerId,
+                "emailAddress": email_address 
             }
 
             payment_post = submitPayment(sub_pay)
             current_code = payment_post['code']
-
-            if current_code not in range(200, 300):
+            
+            if current_code not in range(200, 399):
                 #no need send to error amqp as its done already and return stuff here
-                return {
+                return{
                     "code": current_code,
                     "data": payment_post["data"],
                     "message": "Failure at payment submit"
                 }
+            else:
+                print("\nSending to the checkout page now")
+                return redirect(payment_post['redirect_url'], 303)
+            
+        except Exception as e:
+            # Unexpected error in code
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
+            print(ex_str)
 
+            return jsonify({
+                "code": 500,
+                "message": "master/main.py internal error: " + ex_str
+            }), 500
+
+    # if reached here, not a JSON request.
+    return jsonify({
+        "code": 400,
+        "message": "Invalid JSON input: " + str(request.get_data())
+    }), 400
+
+# continued scenario 2
+@app.route("/master/rental/continue", methods=['POST'])
+def continued():
+    if request.is_json:
+        try:
+            continue_request = request.get_json()
+            print("\nContinuing rental_request in JSON:", continue_request)
+
+            current_code = continue_request['code']
+            payment_post2 = continue_request['data']
+
+            if current_code not in range(200, 399):
+                #no need send to error amqp as its done already and return stuff here
+                errorHandling(payment_post2, current_code, "payment")
+                return{
+                    "code": current_code,
+                    "data": payment_post2,
+                    "message": "Failure at payment submit"
+                }
+            
+            rentalId = payment_post2['rentalId']
+            email_address = payment_post2['emailAddress']
 
             # start rental put
             sendData2 = {
@@ -123,18 +171,18 @@ def rent_car():
                     "message": "Failure at rental put service."
                 }
 
-            # start email amqp
-            email_amqp = email(email_address)
-            current_code = email_amqp['code']
+            # # start email amqp
+            # email_amqp = email(email_address)
+            # current_code = email_amqp['code']
 
-            if current_code not in range(200, 300):
-                #no need send to error amqp as its done already and return stuff here
+            # if current_code not in range(200, 300):
+            #     #no need send to error amqp as its done already and return stuff here
                 
-                return {
-                    "code": current_code,
+            #     return {
+            #         "code": current_code,
             
-                    "message": "Failure at email service."
-                }
+            #         "message": "Failure at email service."
+            #     }
 
             # renturn everything success
             return {
@@ -161,7 +209,7 @@ def rent_car():
         "code": 400,
         "message": "Invalid JSON input: " + str(request.get_data())
     }), 400
-
+    
 # for user scenario 3
 @app.route("/master/rental/update", methods=['PUT'])
 def return_car():
@@ -182,7 +230,8 @@ def return_car():
 
             #start rental get
             sendData = {
-                "rentalId":rentalId
+                "rentalId": rentalId,
+                "days": 0
             }
 
             rental_get = getRental(sendData)
@@ -248,18 +297,18 @@ def return_car():
                     "message": "Failure at rental put service."
                 }
 
-            # start email amqp
-            email_amqp = email(email_address)
-            current_code = email_amqp['code']
+            # # start email amqp
+            # email_amqp = email(email_address)
+            # current_code = email_amqp['code']
 
-            if current_code not in range(200, 300):
-                #no need send to error amqp as its done already and return stuff here
+            # if current_code not in range(200, 300):
+            #     #no need send to error amqp as its done already and return stuff here
                 
-                return {
-                    "code": current_code,
+            #     return {
+            #         "code": current_code,
                     
-                    "message": "Failure at email service."
-                }
+            #         "message": "Failure at email service."
+            #     }
 
             # return everything success
             return {
@@ -294,6 +343,7 @@ def submitPayment(sub_pay):
     print('payment_result:', payment_result)
     # Check the payment result; if a failure, send it to the error microservice.
     code = payment_result["code"]
+    redirect_url = payment_result['session']['url']
 
     if code not in range(200, 300):
         # Inform the error microservice
@@ -307,7 +357,13 @@ def submitPayment(sub_pay):
         "data": payment_result,
     }
     else:
-        return payment_result
+        # return redirect(payment_result["session"]["url"], 303)
+        # return redirect('https://www.google.com/', 303)     
+        return {
+            "code": code,
+            "redirect_url": redirect_url
+        }   
+        # return payment_result
 
 # function to connect to payment service to submit payment
 def releasePayment(rental_request):
@@ -411,10 +467,10 @@ def getUser(owner_id):
     current_service = "user"
 
     print('\n\n-----Invoking user microservice-----')    
-    user_URL = f"http://host.docker.internal:5001/user/{owner_id}" 
+    user_URL = f"http://user:5001/user/{owner_id}" 
     
     user_service_result = invoke_http(
-        user_URL, method="GET")
+        user_URL, method="GET", json={})
     
     print("user_status_result:", user_service_result, '\n')
 
@@ -431,17 +487,17 @@ def getUser(owner_id):
     else:
         return user_service_result
     
-# function for email
-def email(email_address):
-    # invoking amqp for email
-    message = json.dumps(email_address)
+# # function for email
+# def email(email_address):
+#     # invoking amqp for email
+#     message = json.dumps(email_address)
 
-    channel.basic_publish(exchange=exchangename, routing_key="email.alert", body=message, properties=pika.BasicProperties(delivery_mode = 2))
-    # remember to ask if theres error for email amqp
-    # remember to ask what routing key for email
+#     channel.basic_publish(exchange=exchangename, routing_key="email.alert", body=message, properties=pika.BasicProperties(delivery_mode = 2))
+#     # remember to ask if theres error for email amqp
+#     # remember to ask what routing key for email
 
-    #remember how to determine if email success
-    #remember will email service return anything?
+#     #remember how to determine if email success
+#     #remember will email service return anything?
 
 
 if __name__ == "__main__":
