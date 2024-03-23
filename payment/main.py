@@ -1,8 +1,7 @@
-import os
-from dotenv import load_dotenv
 import stripe
 import math
 
+from os import environ
 from invokes import invoke_http
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -13,12 +12,11 @@ from datetime import datetime, timezone, timedelta
 target_timezone = timezone(timedelta(hours=8))
 
 # Load stripe test API key
-load_dotenv()
-stripe.api_key = os.getenv('STRIPE_KEY')
+stripe.api_key = environ.get('STRIPE_KEY')
 
 # Global variables
-master_continue_URL = os.environ.get('master_continue_URL') or "http://host.docker.internal:5100/master/rental/continue"
-master_cancel_URL = os.environ.get('master_cancel_URL') or "http://host.docker.internal:5100/master/rental/cancel"
+master_continue_URL = environ.get('master_continue_URL') or "http://host.docker.internal:5100/master/rental/continue"
+master_cancel_URL = environ.get('master_cancel_URL') or "http://host.docker.internal:5100/master/rental/cancel"
 COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
@@ -26,7 +24,7 @@ PAYMENT_PORT = 5004
 
 app = Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('dbURL')
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
