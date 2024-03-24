@@ -61,7 +61,7 @@ def success():
     try:
         db.session.add(payment)
         db.session.commit()
-        json_data = {"code": 201, "data": {"emailAddress": request.args.get('email_address'), "rentalId": rental_id}}
+        json_data = {"code": 201, "data": {"renterEmailAddress": request.args.get('renter_email_address'), "ownerEmailAddress": request.args.get('owner_email_address'), "rentalId": rental_id}}
         return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
 
     except Exception as e:
@@ -89,7 +89,7 @@ def rent_car():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://localhost:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&email_address={body['emailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            success_url=f"http://localhost:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
             cancel_url=f'http://localhost:{PAYMENT_PORT}/payment/cancel',
         )
 
