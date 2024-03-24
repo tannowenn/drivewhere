@@ -7,24 +7,12 @@ import smtplib
 from os import environ
 from email.message import EmailMessage
 
-# from flask import Flask, request, jsonify
-# from flask_cors import CORS
-# from datetime import datetime
-
 GMAIL_APP_PASS = environ.get('GMAIL_APP_PASS')
 EMAIL_SENDER = "drivewhere1@gmail.com"
-
-# app = Flask(__name__)
-# CORS(app)
 
 a_queue_name = environ.get('a_queue_name') or 'Email' # queue to be subscribed by Email microservice
 
 def send_email(email_receiver, subject, body):
-    # email_receiver = "owen.tan.2022@scis.smu.edu.sg"
-    # subject = "TEST SUbejsdt"
-    # body = """
-    # Hello this is the test email abadljaladjbjalbjad@#$@!
-    # """
 
     em = EmailMessage()
     em['From'] = EMAIL_SENDER
@@ -37,6 +25,53 @@ def send_email(email_receiver, subject, body):
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
         smtp.login(EMAIL_SENDER, GMAIL_APP_PASS)
         smtp.sendmail(EMAIL_SENDER, email_receiver, em.as_string())
+
+def send_scenario_email(email_receiver, scenario, receiver_role):
+    signoff = """Regards,\nDriveWhere"""
+
+    scenario_content = {
+        "rent": {
+            "renter": {
+                "subject": "Successfully rented a car!",
+                "body": f"""Dear {email_receiver.split("@")[0]},
+
+Received confirmation for your car rental. Enjoy your drive, and thank you for using DriveWhere!
+This is an automated email. Please do not reply to this email address as it is not a monitored mailbox.
+
+{signoff}"""
+            },
+            "owner": {
+                "subject": "Successfully rent out a car!",
+                "body": f"""Dear {email_receiver.split("@")[0]},
+
+Your car rent out process is a success. Thank you for using DriveWhere!
+This is an automated email. Please do not reply to this email address as it is not a monitored mailbox.
+
+{signoff}"""
+            }
+        },
+        "return": {
+            "renter": {
+                "subject": "Successfully returned the rented car!",
+                "body": f"""Dear {email_receiver.split("@")[0]},
+
+Your car return process is a success. Thank you for using DriveWhere!
+This is an automated email. Please do not reply to this email address as it is not a monitored mailbox.
+
+{signoff}"""
+            },
+            "owner": {
+                "subject": "Successfully received your returned car!",
+                "body": f"""Dear {email_receiver.split("@")[0]},
+
+Received confirmation for the return of your car. You may proceed list the car if you wish to rent it out again. Thank you for using DriveWhere!
+This is an automated email. Please do not reply to this email address as it is not a monitored mailbox.
+
+{signoff}"""
+            }
+        }
+    }
+    send_email(email_receiver=email_receiver, subject=scenario_content[scenario][receiver_role]["subject"], body=scenario_content[scenario][receiver_role]["body"])
 
 def receiveEmailAdd(channel):
     try:
@@ -58,9 +93,12 @@ def callback(channel, method, properties, body): # required signature for the ca
 
 def processEmailAdd(email):
     email_data = json.loads(email)
-    emailAdd = email_data.get('email')
-    if emailAdd is not None:
-        print(f"Email Address: {emailAdd}")
+    renter_email = email_data.get('renterEmailAddress')
+    owner_email = email_data.get('ownerEmailAddress')
+    scenario = email_data.get('scenario')
+    if email_data is not None:
+        send_scenario_email(email_receiver=renter_email, scenario=scenario, receiver_role="renter")
+        send_scenario_email(email_receiver=owner_email, scenario=scenario, receiver_role="owner")
     else:
         print("Invalid JSON format. Missing 'code' or 'message' field.")
 
