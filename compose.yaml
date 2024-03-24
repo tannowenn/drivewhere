@@ -78,6 +78,24 @@ services:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/error
   
   ###############################################
+  # email: The email microservice
+  ###############################################
+  email:
+    build:
+      context: ./email
+      dockerfile: Dockerfile
+    image: ryan2409/email:esd
+    restart: always
+    depends_on:
+      - rabbitmq
+    environment:
+      rabbit_host: rabbitmq
+      rabbit_port: 5672
+      a_queue_name: Email
+      GMAIL_APP_PASS: "womf tksy iejs cide"
+      PYTHONUNBUFFERED: 1
+  
+  ###############################################
   # Master: The master microservice
   ###############################################
   master:

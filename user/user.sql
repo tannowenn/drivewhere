@@ -14,4 +14,5 @@ CREATE TABLE IF NOT EXISTS `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `user` (`userId`, `name`, `emailAddress`, `phoneNum`, `stripeId`) VALUES
-(2, 'Clement', 'clement@gmail.com', '92882404', 'ClementStripeId');
+(2, 'Clement', 'clement@gmail.com', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(1, 'renter', 'renters@gmail.com', '92436688', 'acct_1OuWDc2MktsaBBhJ');

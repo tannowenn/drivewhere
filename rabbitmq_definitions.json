@@ -44,6 +44,13 @@
             "durable": true,
             "auto_delete": false,
             "arguments": {}
+        },
+        {
+            "name": "Email",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {}
         }
     ],
     "exchanges": [
@@ -64,6 +71,14 @@
             "destination": "Error",
             "destination_type": "queue",
             "routing_key": "*.error",
+            "arguments": {}
+        },
+        {
+            "source": "drivewhere_topic",
+            "vhost": "/",
+            "destination": "Email",
+            "destination_type": "queue",
+            "routing_key": "email",
             "arguments": {}
         }
     ]

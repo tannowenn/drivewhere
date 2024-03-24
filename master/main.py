@@ -46,6 +46,7 @@ def rent_car():
             # order as follows
             # 1) goes to rental(get) to get owner id
             # 2) goes to user(get) to get owner email
+            # 2b) goes to user(get) to get renter email
             # 3) goes to payment(submit) to do payment
             # 4) goes to rental(put) to change rental status
             # 5) goes to email(amqp) to alert owner 
@@ -73,21 +74,37 @@ def rent_car():
             ownerId = rental_get['data']['userId']
             paymentAmt = int(rental_get['data']['PaymentAmount'])
 
-            # starting get user
-            user_get = getUser(ownerId)
-            current_code = user_get['code']
+            # starting get user to get owner email
+            user_get_owner = getUser(ownerId)
+            current_code = user_get_owner['code']
 
             if current_code not in range(200, 300):
                 #no need send to error amqp as its done already and return stuff here
                 
                 return {
                     "code": current_code,
-                    "data": user_get["data"],
+                    "data": user_get_owner["data"],
                     "message": "Failure at user get service."
                 }
             
-            email_address = user_get['data']['emailAddress']
-            print(email_address)
+            ownerEmailAddress = user_get_owner['data']['emailAddress']
+            print(ownerEmailAddress)
+
+            # starting get user to get renter email
+            user_get_renter = getUser(renterID)
+            current_code = user_get_renter['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    "data": user_get_renter["data"],
+                    "message": "Failure at user get service."
+                }
+            
+            renterEmailAddress = user_get_renter['data']['emailAddress']
+            print(renterEmailAddress)
 
             # start submit payment
             sub_pay = {
@@ -95,7 +112,8 @@ def rent_car():
                 "paymentAmt": paymentAmt,
                 "payerId": renterID,
                 "payeeId": ownerId,
-                "emailAddress": email_address 
+                "ownerEmailAddress": ownerEmailAddress, 
+                "renterEmailAddress": renterEmailAddress,
             }
 
             payment_post = submitPayment(sub_pay)
@@ -151,8 +169,9 @@ def continued():
                 }
             
             rentalId = payment_post2['rentalId']
-            email_address = payment_post2['emailAddress']
-
+            ownerEmailAddress = payment_post2['ownerEmailAddress']
+            renterEmailAddress = payment_post2['renterEmailAddress']
+            
             # start rental put
             sendData2 = {
                 "rentalId": rentalId,
@@ -171,8 +190,14 @@ def continued():
                     "message": "Failure at rental put service."
                 }
 
-            # # start email amqp
-            # email_amqp = email(email_address)
+            # start email amqp
+            result = {
+                'renterEmailAddress': renterEmailAddress,
+                'ownerEmailAddress': ownerEmailAddress,
+                'scenario': "rent"
+            }
+            email_amqp = email(result)
+            
             # current_code = email_amqp['code']
 
             # if current_code not in range(200, 300):
@@ -180,7 +205,6 @@ def continued():
                 
             #     return {
             #         "code": current_code,
-            
             #         "message": "Failure at email service."
             #     }
 
@@ -222,7 +246,8 @@ def return_car():
             # order as follows
             # 1) goes to rental(get) to get owner id
             # 2) goes to user(get) to get owner email+stripeid
-            # 3) goes to payment(release) to do payment
+            # 3) goes to payment(release) to do payment and receive renter user id
+            # 3b)goes to user(get) to get renter email
             # 4) goes to rental(put) to change rental status
             # 5) goes to email(amqp) to alert owner 
 
@@ -248,19 +273,20 @@ def return_car():
             
             ownerId = rental_get['data']['userId']
             
-            # start get user
-            user_get = getUser(ownerId)
-            current_code = user_get['code']
+            # starting get user to get owner email and stripe id
+            user_get_owner = getUser(ownerId)
+            current_code = user_get_owner['code']
             if current_code not in range(200, 300):
                 #no need send to error amqp as its done already and return stuff here
                 
                 return {
                     "code": current_code,
-                    "data": user_get["data"],
+                    "data": user_get_owner["data"],
                     "message": "Failure at user get service."
                 }
-            email_address = user_get['data']['emailAddress']
-            stripeId =  user_get['data']['stripeId']
+            ownerEmailAddress = user_get_owner['data']['emailAddress']
+            print(ownerEmailAddress)
+            stripeId =  user_get_owner['data']['stripeId']
 
             # start release payment
             payment_info = {
@@ -278,6 +304,26 @@ def return_car():
                     "data": payment_post,
                     "message": "Failure at release payment service."
                 }
+            
+            print("\nreleased payment data")
+            print(payment_post["data"])
+            renterId = payment_post["data"]["payerId"]
+
+            # starting get user to get renter email
+            user_get_renter = getUser(renterId)
+            current_code = user_get_renter['code']
+
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    "data": user_get_renter["data"],
+                    "message": "Failure at user get service."
+                }
+            
+            renterEmailAddress = user_get_renter['data']['emailAddress']
+            print(renterEmailAddress)
 
             # start rental put
             sendData2 = {
@@ -297,8 +343,13 @@ def return_car():
                     "message": "Failure at rental put service."
                 }
 
-            # # start email amqp
-            # email_amqp = email(email_address)
+            # start email amqp
+            result = {
+                'renterEmailAddress': renterEmailAddress,
+                'ownerEmailAddress': ownerEmailAddress,
+                'scenario': "return"
+            }
+            email_amqp = email(result)
             # current_code = email_amqp['code']
 
             # if current_code not in range(200, 300):
@@ -306,7 +357,6 @@ def return_car():
                 
             #     return {
             #         "code": current_code,
-                    
             #         "message": "Failure at email service."
             #     }
 
@@ -487,12 +537,18 @@ def getUser(owner_id):
     else:
         return user_service_result
     
-# # function for email
-# def email(email_address):
-#     # invoking amqp for email
-#     message = json.dumps(email_address)
+# function for email
+def email(result):
+    # invoking amqp for email
+    print('\n\n-----Invoking email microservice-----')  
+    
+    message = json.dumps(result)
+    owner = result['ownerEmailAddress']
+    renter = result['renterEmailAddress']
+    scenario = result['scenario']
+    print(f"\nOwner: {owner}\nRenter: {renter}\nScenario: {scenario} ")  
 
-#     channel.basic_publish(exchange=exchangename, routing_key="email.alert", body=message, properties=pika.BasicProperties(delivery_mode = 2))
+    channel.basic_publish(exchange=exchangename, routing_key="email", body=message, properties=pika.BasicProperties(delivery_mode = 2))
 #     # remember to ask if theres error for email amqp
 #     # remember to ask what routing key for email
 
