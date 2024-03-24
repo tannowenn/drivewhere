@@ -2,15 +2,11 @@ import time
 import pika
 from os import environ
 
-hostname = "localhost" # default hostname
-port = 5672            # default port
-exchangename = "Email" # exchange name
-exchangetype = "topic" # - use a 'topic' exchange to enable interaction
-
-# Instead of hardcoding the values, we can also get them from the environ as shown below
-# hostname = environ.get('hostname') #localhost
-# port = environ.get('port')         #5672 
-a_queue_name = environ.get('a_queue_name') #Error
+hostname = environ.get('rabbit_host') or "localhost" # default hostname
+port = environ.get('rabbit_port') or 5672            # default port
+exchangename = environ.get('exchangename') or "Email" # exchange name
+exchangetype = environ.get('exchangetype') or "topic" # - use a 'topic' exchange to enable interaction
+a_queue_name = environ.get('a_queue_name') or "Email" #Email
 
 
 #to create a connection to the broker
