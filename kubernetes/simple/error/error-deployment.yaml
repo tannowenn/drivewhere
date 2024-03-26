@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: error
-          image: brandonlim99/kubernetes_test:error_amqp.v1
+          image: brandonlim99/drivewhere:error_final
           ports:
             - containerPort: 5005
           env:

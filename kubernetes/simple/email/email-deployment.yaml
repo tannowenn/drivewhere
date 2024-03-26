@@ -14,6 +14,9 @@ spec:
     spec:
       containers:
         - name: email
-          image: brandonlim99/kubernetes_test:email
+          image: brandonlim99/drivewhere:email
           ports:
             - containerPort: 5003
+          env:
+            - name: hostname
+              value : "rabbitmq-service"

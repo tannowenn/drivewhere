@@ -10,7 +10,7 @@ from email.message import EmailMessage
 GMAIL_APP_PASS = environ.get('GMAIL_APP_PASS')
 EMAIL_SENDER = "drivewhere1@gmail.com"
 
-a_queue_name = environ.get('a_queue_name') or 'Email' # queue to be subscribed by Email microservice
+a_queue_name = 'Email' # queue to be subscribed by Email microservice
 
 def send_email(email_receiver, subject, body):
 

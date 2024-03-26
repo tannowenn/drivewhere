@@ -14,6 +14,9 @@ spec:
     spec:
       containers:
         - name: user
-          image: brandonlim99/kubernetes_test:user
+          image: brandonlim99/drivewhere:user
           ports:
             - containerPort: 5001
+          env: 
+          - name: dbURL
+            value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"

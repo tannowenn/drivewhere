@@ -14,16 +14,16 @@ import amqp_connection
 app = Flask(__name__)
 CORS(app)
 
+user_URL = environ.get("user_URL")
+rental_update_URL = environ.get('rental_update_URL')
+rental_get_URL = environ.get('rental_get_URL') 
 
-rental_update_URL = environ.get('rental_update_URL') or "http://host.docker.internal:5002/rental/update" 
-rental_get_URL = environ.get('rental_get_URL') or "http://host.docker.internal:5002/rental/info"
-
-payment_submit_URL = environ.get('payment_submit_URL') or "http://host.docker.internal:5004/payment/rent" 
-payment_release_URL = environ.get('payment_release_URL') or "http://host.docker.internal:5004/payment/return"
+payment_submit_URL = environ.get('payment_submit_URL')
+payment_release_URL = environ.get('payment_release_URL')
 
 # remember dont forget to change excahnge name
 exchangename = environ.get('exchangename') or "drivewhere_topic" 
-exchangetype = environ.get('exchangetype') or "topic" 
+exchangetype = "topic" 
 
 #create a connection and a channel to the broker to publish messages to error, email queues
 connection = amqp_connection.create_connection() 
@@ -517,10 +517,10 @@ def getUser(owner_id):
     current_service = "user"
 
     print('\n\n-----Invoking user microservice-----')    
-    user_URL = f"http://user:5001/user/{owner_id}" 
+    user_URL_id = f"{user_URL}/{owner_id}"
     
     user_service_result = invoke_http(
-        user_URL, method="GET", json={})
+        user_URL_id, method="GET", json={})
     
     print("user_status_result:", user_service_result, '\n')
 

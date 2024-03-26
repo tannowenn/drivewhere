@@ -6,11 +6,10 @@ import googlemaps
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root@localhost:3306/rental'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-Api_key = environ.get("APIKEY") or 'AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE'
-
+Api_key = environ.get("APIKEY")
 db = SQLAlchemy(app)
 
 

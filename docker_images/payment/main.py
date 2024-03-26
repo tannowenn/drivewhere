@@ -15,8 +15,8 @@ target_timezone = timezone(timedelta(hours=8))
 stripe.api_key = environ.get('STRIPE_KEY')
 
 # Global variables
-master_continue_URL = environ.get('master_continue_URL') or "http://host.docker.internal:5100/master/rental/continue"
-master_cancel_URL = environ.get('master_cancel_URL') or "http://host.docker.internal:5100/master/rental/cancel"
+master_continue_URL = environ.get('master_continue_URL')
+master_cancel_URL = environ.get('master_cancel_URL')
 COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
@@ -76,6 +76,7 @@ def cancel():
 def rent_car():
     try:
         body = request.get_json()
+        payment_amount = int(float(body['paymentAmt'])*100)
 
         session = stripe.checkout.Session.create(
             line_items=[{
@@ -84,12 +85,12 @@ def rent_car():
                     'product_data': {
                         'name': f"Rental {body['rentalId']}",
                     },
-                    'unit_amount': body['paymentAmt'],
+                    'unit_amount': payment_amount,
                 },
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://localhost:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            success_url=f"http://payment-service:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
             cancel_url=f'http://localhost:{PAYMENT_PORT}/payment/cancel',
         )
 

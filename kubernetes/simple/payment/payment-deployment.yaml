@@ -14,6 +14,15 @@ spec:
     spec:
       containers:
         - name: payment
-          image: brandonlim99/kubernetes_test:payment
+          image: brandonlim99/drivewhere:payment_final
           ports:
             - containerPort: 5004
+          env: 
+          - name: dbURL
+            value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
+          - name: STRIPE_KEY
+            value: "sk_test_51OuU6ERwhPaLZQ7Jc38nX5rpjYnhJbtspXQ5EMvskpjbnsDTotjrA1GciZZKFUyPBWwZnO0IGlVsdqmFWlX4Rgba000ObBunlu"
+          - name: master_continue_URL
+            value: "http://master-service:5100/master/rental/continue"
+          - name: master_cancel_URL
+            value: "http://master-service:5100/master/rental/cancel"
