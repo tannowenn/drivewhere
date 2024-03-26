@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: amqp-setup-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: amqp-setup
+          image: brandonlim99/kubernetes_test:amqp-setup.v4
+          command: ["python", "amqp_setup.py"]
+          env:
+            - name: hostname
+              value: "rabbitmq-service"
+      restartPolicy: Never

@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: error-service
+spec:
+  selector:
+    app: error
+  ports:
+    - protocol: TCP
+      port: 5005
+      targetPort: 5005
