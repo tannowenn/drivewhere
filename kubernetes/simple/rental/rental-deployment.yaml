@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rental-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rental
+  template:
+    metadata:
+      labels:
+        app: rental
+    spec:
+      containers:
+        - name: rental
+          image: brandonlim99/kubernetes_test:rental.v2.3
+          ports:
+            - containerPort: 5002
+          env:
+            - name: dbURL
+              value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
+            - name: APIKEY
+              value: "AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE"
+

@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: error-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: error
+  template:
+    metadata:
+      labels:
+        app: error
+    spec:
+      containers:
+        - name: error
+          image: brandonlim99/kubernetes_test:error_amqp.v1
+          ports:
+            - containerPort: 5005
+          env:
+            - name: dbURL
+              value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
+            - name: hostname
+              value : "rabbitmq-service"
