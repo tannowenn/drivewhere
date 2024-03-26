@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3-management
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+          env:
+          - name: RABBITMQ_NODENAME
+            value: "Error"
+          volumeMounts:
+            - name: rabbitmq-data
+              mountPath: /var/lib/rabbitmq
+            - name: rabbitmq-config
+              mountPath: /etc/rabbitmq/rabbitmq.config
+              subPath: rabbitmq.config
+            - name: rabbitmq-definitions
+              mountPath: /etc/rabbitmq/rabbitmq_definitions.json
+              subPath: rabbitmq_definitions.json
+      volumes:
+        - name: rabbitmq-data
+          persistentVolumeClaim:
+            claimName: rabbitmq-pvc
+        - name: rabbitmq-config
+          configMap:
+            name: rabbitmq-config
+            items:
+              - key: rabbitmq.config
+                path: rabbitmq.config
+        - name: rabbitmq-definitions
+          configMap:
+            name: rabbitmq-definitions
+            items:
+              - key: rabbitmq_definitions.json
+                path: rabbitmq_definitions.json
