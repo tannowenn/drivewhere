@@ -1,14 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from os import environ
 
 import googlemaps
-from datetime import datetime
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root@localhost:3306/rental'
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root@localhost:3306/rental'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+Api_key = environ.get("APIKEY") or 'AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE'
 
 db = SQLAlchemy(app)
 
@@ -24,12 +25,11 @@ class Rental(db.Model):
     carMake = db.Column(db.String(255),nullable=False)
     capacity = db.Column(db.Integer,nullable=False)
     carPlate = db.Column(db.String(16),nullable=False)
-
-
+    pricePerDay = db.Column(db.Float(precision=2), nullable=False)
 
 
     def json(self):
-        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate}
+        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate, "PricePerDay" : self.pricePerDay}
 
 
 @app.route("/rental")
@@ -40,7 +40,7 @@ def get_open_rental_listings():
         rental_dict = []
         for listing in rental_list:
             listing = listing.json()
-            gmaps = googlemaps.Client(key='AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE')
+            gmaps = googlemaps.Client(key=Api_key)
             source = data['address']
             destination = listing['address']
             direction_result = gmaps.directions(source,destination)
@@ -68,11 +68,14 @@ def get_rental_info():
     rental_list = db.session.scalars(db.select(Rental).filter_by(rentalId = rentId).limit(1)).first()
     if rental_list:
         userId = rental_list.userId
+        Amount = rental_list.pricePerDay
+        PaymentAmount = float(Amount) * float(data['days'])
         return jsonify(
             {
                 "code": 200,
                 "data": {
-                    "userId": userId
+                    "userId": userId,
+                    "PaymentAmount" : PaymentAmount
                 }
             }
         )
@@ -87,8 +90,19 @@ def get_rental_info():
 def create_rental_listing():
     data = request.get_json()
     listing = Rental(**data)
-
     try:
+        try:
+            gmaps = googlemaps.Client(key=Api_key)
+            source = '520709'
+            destination = listing.address
+            direction_result = gmaps.directions(source,destination)
+        except:
+            return jsonify(
+                {
+                "code": 500,
+                "message": "Please enter a valid postal code"
+                }
+            ), 500
         db.session.add(listing)
         db.session.commit()
     except:

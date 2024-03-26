@@ -2,14 +2,12 @@ import time
 import pika
 from os import environ
 
-hostname = "localhost" # default hostname
-port = 5672            # default port
-exchangename = "email" # exchange name
-exchangetype = "topic" # - use a 'topic' exchange to enable interaction
+hostname = environ.get('rabbit_host') or "localhost" # default hostname
+port = environ.get('rabbit_port') or 5672            # default port
+exchangename = environ.get('exchangename') or "Email" # exchange name
+exchangetype = environ.get('exchangetype') or "topic" # - use a 'topic' exchange to enable interaction
+a_queue_name = environ.get('a_queue_name') or "Email" #Email
 
-# Instead of hardcoding the values, we can also get them from the environ as shown below
-# hostname = environ.get('hostname') #localhost
-# port = environ.get('port')         #5672 
 
 #to create a connection to the broker
 def create_connection(max_retries=12, retry_interval=5):
@@ -60,11 +58,23 @@ def create_queues(channel):
 
 def create_email_queue(channel):
     print('amqp_setup:create_email_queue')
-    a_queue_name = 'email'
+    a_queue_name = 'Email'
     channel.queue_declare(queue=a_queue_name, durable=True) # 'durable' makes the queue survive broker restarts
     channel.queue_bind(exchange=exchangename, queue=a_queue_name, routing_key='#')
         # bind the queue to the exchange via the key
         # 'routing_key=#' => any routing_key would be matched
+    
+def check_exchange(channel, exchangename, exchangetype):
+    try:    
+        channel.exchange_declare(exchangename, exchangetype, durable=True, passive=True) 
+            # passive (bool): If set, the server will reply with Declare-Ok if the 
+            # exchange already exists with the same name, and raise an error if not. 
+            # The client can use this to check whether an exchange exists without 
+            # modifying the server state.            
+    except Exception as e:
+        print('Exception:', e)
+        return False
+    return True
 
 if __name__ == "__main__":  # execute this program only if it is run as a script (not by 'import')   
     connection = create_connection()
