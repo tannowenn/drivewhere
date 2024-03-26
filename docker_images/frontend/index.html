@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+
+    <title>DriveWhere</title>
+
+    <link rel="stylesheet" href="">
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!-- Bootstrap libraries -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css'
+        rel='stylesheet'
+        integrity='sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC'
+        crossorigin='anonymous'>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div id="main-container" class="container">
+        <h1 class="display-4">User Listing</h1>
+        <table class='table table-striped border-1'>
+            <thead class='table-dark'>
+                <tr>
+                    <th>Name</th>
+                    <th>User Id</th>
+                    <th>Email Address</th>
+                    <th>Phone Number</th>
+                </tr>
+            </thead>
+            <tbody id="usersTable"></tbody>
+        </table>
+        <a id="addUserBtn" class="btn btn-primary" href="add-user.html">Add a User</a>
+    </div>
+    <script>
+        // Helper function to display error message
+        function showError(message) {
+            // Hide the table and button in the event of error
+            $('#usersTable').hide();
+            $('#addUserBtn').hide();
+
+            // Display an error under the main container
+            $('#main-container')
+                .append("<label>" + message + "</label>");
+        }
+
+        // anonymous async function - using await requires the function that calls it to be async
+        $(async () => {
+            // Change serviceURL to your own
+            var serviceURL = "http://127.0.0.1:5001/user";
+
+            try {
+                const response =
+                    await fetch(
+                        serviceURL, { mode: 'cors', method: 'GET' }
+                    );
+                const result = await response.json();
+                if (response.status === 200) {
+                    // success case
+                    var users = result.data.users; //the array is in books within data of the returned result
+
+                    // for loop to setup all table rows with obtained book data
+                    var rows = "";
+                    for (const user of users) {
+                        eachRow =
+                            "<td>" + user.name + "</td>" +
+                            "<td>" + user.userId + "</td>" +
+                            "<td>" + user.emailAddress + "</td>" +
+                            "<td>" + user.phoneNum + "</td>";
+                        rows += "<tr>" + eachRow + "</tr>";
+                    }
+                    // add all the rows to the table
+                    $('#usersTable').append(rows);
+
+                } else if (response.status == 404) {
+                    // No books
+                    showError
+                        (result.message);
+                } else {
+                    // unexpected outcome, throw the error
+                    throw response.status;
+                }
+
+            } catch (error) {
+                // Errors when calling the service; such as network error, 
+                // service offline, etc
+                showError
+                    ('There is a problem retrieving user data, please try again later.<br />' + error);
+
+            } // error
+        });
+    </script>
+
+    <!-- Bootstrap Javascript -->
+    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js'
+        integrity='sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM'
+        crossorigin='anonymous'></script>
+
+</body>
+
+</html>
