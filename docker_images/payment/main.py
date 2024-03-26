@@ -76,6 +76,7 @@ def cancel():
 def rent_car():
     try:
         body = request.get_json()
+        payment_amount = int(float(body['paymentAmt'])*100)
 
         session = stripe.checkout.Session.create(
             line_items=[{
@@ -84,7 +85,7 @@ def rent_car():
                     'product_data': {
                         'name': f"Rental {body['rentalId']}",
                     },
-                    'unit_amount': body['paymentAmt'],
+                    'unit_amount': payment_amount,
                 },
                 'quantity': 1,
             }],
