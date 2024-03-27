@@ -92,7 +92,7 @@ services:
       rabbit_host: rabbitmq
       rabbit_port: 5672
       a_queue_name: Email
-      GMAIL_APP_PASS: "womf tksy iejs cide"
+      GMAIL_APP_PASS: "vzso ycpw ksez vrey"
       PYTHONUNBUFFERED: 1
   
   ###############################################
@@ -109,13 +109,14 @@ services:
       - rental
       - payment
       - error
-      # - email
+      - email
       - rabbitmq
     environment:
       rabbit_host: rabbitmq
       rabbit_port: 5672
       rental_get_URL: http://rental:5002/rental/info 
       rental_update_URL: http://rental:5002/rental/update 
+      user_get_URL: http://user:5001/user/
       payment_submit_URL: http://payment:5004/payment/rent
       payment_release_URL: http://payment:5004/payment/return
       PYTHONUNBUFFERED: 1

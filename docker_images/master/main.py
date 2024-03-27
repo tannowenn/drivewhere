@@ -18,6 +18,8 @@ CORS(app)
 rental_update_URL = environ.get('rental_update_URL') or "http://host.docker.internal:5002/rental/update" 
 rental_get_URL = environ.get('rental_get_URL') or "http://host.docker.internal:5002/rental/info"
 
+user_get_URL = environ.get('user_get_URL') or "http://host.docker.internal:5001/user/"
+
 payment_submit_URL = environ.get('payment_submit_URL') or "http://host.docker.internal:5004/payment/rent" 
 payment_release_URL = environ.get('payment_release_URL') or "http://host.docker.internal:5004/payment/return"
 
@@ -516,8 +518,9 @@ def getUser(owner_id):
     # invoking user microservice
     current_service = "user"
 
-    print('\n\n-----Invoking user microservice-----')    
-    user_URL = f"http://user:5001/user/{owner_id}" 
+    print('\n\n-----Invoking user microservice-----')   
+    user_URL = user_get_URL + f"{owner_id}" 
+    # user_URL = f"http://user:5001/user/{owner_id}" 
     
     user_service_result = invoke_http(
         user_URL, method="GET", json={})
