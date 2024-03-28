@@ -46,12 +46,10 @@ def rent_car():
             print("\nReceived an rental_request in JSON:", rental_request)
             
             # order as follows
-            # 1) goes to rental(get) to get owner id
+            # 1) goes to rental(get) to get owner id and payment amt
             # 2) goes to user(get) to get owner email
-            # 2b) goes to user(get) to get renter email
-            # 3) goes to payment(submit) to do payment
-            # 4) goes to rental(put) to change rental status
-            # 5) goes to email(amqp) to alert owner 
+            # 3) goes to user(get) to get renter email
+            # 4) goes to payment(submit) to do payment
 
             renterID = rental_request["userId"]
             days = rental_request["days"]
@@ -158,6 +156,9 @@ def continued():
             continue_request = request.get_json()
             print("\nContinuing rental_request in JSON:", continue_request)
 
+            # 5) goes to rental(put) to change rental status to rented
+            # 6) goes to email(amqp) to alert owner and renter
+
             current_code = continue_request['code']
             payment_post2 = continue_request['data']
 
@@ -199,16 +200,6 @@ def continued():
                 'scenario': "rent"
             }
             email_amqp = email(result)
-            
-            # current_code = email_amqp['code']
-
-            # if current_code not in range(200, 300):
-            #     #no need send to error amqp as its done already and return stuff here
-                
-            #     return {
-            #         "code": current_code,
-            #         "message": "Failure at email service."
-            #     }
 
             # renturn everything success
             return {
@@ -249,9 +240,9 @@ def return_car():
             # 1) goes to rental(get) to get owner id
             # 2) goes to user(get) to get owner email+stripeid
             # 3) goes to payment(release) to do payment and receive renter user id
-            # 3b)goes to user(get) to get renter email
-            # 4) goes to rental(put) to change rental status
-            # 5) goes to email(amqp) to alert owner 
+            # 4)goes to user(get) to get renter email
+            # 5) goes to rental(put) to change rental status
+            # 6) goes to email(amqp) to alert owner 
 
             rentalId = return_request["rentalId"]
 
@@ -352,15 +343,6 @@ def return_car():
                 'scenario': "return"
             }
             email_amqp = email(result)
-            # current_code = email_amqp['code']
-
-            # if current_code not in range(200, 300):
-            #     #no need send to error amqp as its done already and return stuff here
-                
-            #     return {
-            #         "code": current_code,
-            #         "message": "Failure at email service."
-            #     }
 
             # return everything success
             return {
@@ -399,7 +381,6 @@ def submitPayment(sub_pay):
 
     if code not in range(200, 300):
         # Inform the error microservice
-        #print('\n\n-----Invoking error microservice as payment fails-----')
         print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
 
         errorHandling(payment_result, code, current_service)
@@ -409,8 +390,6 @@ def submitPayment(sub_pay):
         "data": payment_result,
     }
     else:
-        # return redirect(payment_result["session"]["url"], 303)
-        # return redirect('https://www.google.com/', 303)     
         return {
             "code": code,
             "redirect_url": redirect_url
@@ -429,7 +408,6 @@ def releasePayment(rental_request):
     
     if code not in range(200, 300):
         # Inform the error microservice
-        #print('\n\n-----Invoking error microservice as payment fails-----')
         print('\n\n-----Publishing the (payment error) message with routing_key=payment.error-----')
 
         errorHandling(payment_result, code, current_service)
@@ -484,7 +462,6 @@ def getRental(sendData):
     if code not in range(200, 300):
         #send to error amqp and return stuff here
         errorHandling(rental_service_result, code, current_service)
-        #below is return stuff instead of final return stuff
         return {
             "code": code,
             "data": rental_service_result
@@ -520,7 +497,6 @@ def getUser(owner_id):
 
     print('\n\n-----Invoking user microservice-----')   
     user_URL = user_get_URL + f"{owner_id}" 
-    # user_URL = f"http://user:5001/user/{owner_id}" 
     
     user_service_result = invoke_http(
         user_URL, method="GET", json={})
@@ -552,11 +528,6 @@ def email(result):
     print(f"\nOwner: {owner}\nRenter: {renter}\nScenario: {scenario} ")  
 
     channel.basic_publish(exchange=exchangename, routing_key="email", body=message, properties=pika.BasicProperties(delivery_mode = 2))
-#     # remember to ask if theres error for email amqp
-#     # remember to ask what routing key for email
-
-#     #remember how to determine if email success
-#     #remember will email service return anything?
 
 
 if __name__ == "__main__":
