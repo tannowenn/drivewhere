@@ -14,9 +14,11 @@ spec:
     spec:
       containers:
         - name: email
-          image: brandonlim99/drivewhere:email
+          image: brandonlim99/drivewhere:email_final
           ports:
             - containerPort: 5003
           env:
             - name: hostname
               value : "rabbitmq-service"
+            - name: GMAIL_APP_PASS
+              value: "vzso ycpw ksez vrey" 
