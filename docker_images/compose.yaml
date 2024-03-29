@@ -28,6 +28,8 @@ services:
     environment:
       dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/rental
       PYTHONUNBUFFERED: 1
+    ports:
+      - "5002:5002"
   ###############################################
   # payment: The payment microservice
   ###############################################
