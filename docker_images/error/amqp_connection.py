@@ -2,8 +2,8 @@ import time
 import pika
 from os import environ
 
-hostname = environ.get('hostname') or 'localhost' ### # default hostname
-port = environ.get('port') or 5672 ###  # default port
+hostname = environ.get('rabbit_host') or 'rabbitmq' ### # default hostname
+port = environ.get('rabbit_port') or 5672 ###  # default port
 
 
 # function to create a connection to the broker
