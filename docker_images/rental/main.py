@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from os import environ
 
 import googlemaps
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root@localhost:3306/rental'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -32,7 +34,7 @@ class Rental(db.Model):
         return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate, "pricePerDay" : self.pricePerDay}
 
 
-@app.route("/rental")
+@app.route("/rental", methods=['POST'])
 def get_open_rental_listings():
     rental_list = db.session.scalars(db.select(Rental).filter_by(status="open")).all()
     data = request.get_json()
