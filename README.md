@@ -1,8 +1,8 @@
-# drivewhere
+![image](https://github.com/tannowenn/drivewhere/assets/142380212/c484b1b2-bccb-45f8-ad79-cf4f3111d105)# drivewhere
 drive here drive there drive everywhere
 
 
-<!-- Deploying on Kubernetes -->
+## Deploying on Kubernetes 
 We will be using Minikube to be deployed locally. 
 Some prerequities before running this project on Kubernetes:
 - Have Docker installed on the machine
@@ -15,7 +15,7 @@ We can install Minikube through this link (https://minikube.sigs.k8s.io/docs/sta
 
 Step 2: Start up the cluster
 After installation, we can start up the cluster! Let's name our cluster drivewhere and give it two nodes <br>
-`minikube start --nodes 2 --profile drivewhere`
+`minikube start --nodes 2 --profile drivewhere` <br>
 Starting minikube will take some time (and also some disk space!)
 
 We can ensure we have 2 nodes (1 master, 1 slave) by typing:
