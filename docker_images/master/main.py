@@ -128,7 +128,10 @@ def rent_car():
                 }
             else:
                 print("\nSending to the checkout page now")
-                return redirect(payment_post['redirect_url'], 303)
+                return jsonify({
+                    "code": 200,
+                    "data": {"url": payment_post['redirect_url']}
+                }), 200
             
         except Exception as e:
             # Unexpected error in code
