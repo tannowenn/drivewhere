@@ -2,11 +2,7 @@ import time
 import pika
 from os import environ
 
-<<<<<<< HEAD
 hostname = environ.get('rabbit_host') or 'rabbitmq' ### # default hostname
-=======
-hostname = environ.get('rabbit_host') or 'localhost' ### # default hostname
->>>>>>> 174bebf (change environment var name)
 port = environ.get('rabbit_port') or 5672 ###  # default port
 
 
