@@ -21,5 +21,20 @@ spec:
             - name: dbURL
               value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
             - name: APIKEY
-              value: "AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE"
+              valueFrom:
+                secretKeyRef:
+                  name: gmaps-key
+                  key: APIKEY
 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rental-service
+spec:
+  selector:
+    app: rental
+  ports:
+    - protocol: TCP
+      port: 5002
+      targetPort: 5002

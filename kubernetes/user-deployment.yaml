@@ -20,3 +20,16 @@ spec:
           env: 
           - name: dbURL
             value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app: user
+  ports:
+    - protocol: TCP
+      port: 5001
+      targetPort: 5001

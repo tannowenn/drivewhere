@@ -21,8 +21,24 @@ spec:
           - name: dbURL
             value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
           - name: STRIPE_KEY
-            value: "sk_test_51OuU6ERwhPaLZQ7Jc38nX5rpjYnhJbtspXQ5EMvskpjbnsDTotjrA1GciZZKFUyPBWwZnO0IGlVsdqmFWlX4Rgba000ObBunlu"
+            valueFrom:
+              secretKeyRef:
+                name: stripe-key
+                key: STRIPE_KEY
           - name: master_continue_URL
             value: "http://master-service:5100/master/rental/continue"
           - name: master_cancel_URL
             value: "http://master-service:5100/master/rental/cancel"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+spec:
+  selector:
+    app: payment
+  ports:
+    - protocol: TCP
+      port: 5004
+      targetPort: 5004

@@ -21,4 +21,21 @@ spec:
             - name: hostname
               value : "rabbitmq-service"
             - name: GMAIL_APP_PASS
-              value: "vzso ycpw ksez vrey" 
+              valueFrom:
+                secretKeyRef:
+                  name:  gmail-pass
+                  key: GMAIL_APP_PASS
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: email-service
+spec:
+  selector:
+    app: email
+  ports:
+    - protocol: TCP
+      port: 5003
+      targetPort: 5003
+

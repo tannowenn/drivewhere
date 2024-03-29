@@ -1,7 +1,6 @@
 import amqp_connection
 import json
 import pika
-import ssl
 import smtplib
 
 from os import environ
