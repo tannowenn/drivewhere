@@ -14,7 +14,7 @@ Step 1: Install Minikube
 We can install Minikube through this link (https://minikube.sigs.k8s.io/docs/start/) and only follow Step 1 of the documentation
 
 Step 2: Start up the cluster
-After installation, we can start up the cluster! Let's name our cluster drivewhere and give it two nodes
+After installation, we can start up the cluster! Let's name our cluster drivewhere and give it two nodes <br>
 `minikube start --nodes 2 --profile drivewhere`
 Starting minikube will take some time (and also some disk space!)
 
