@@ -29,7 +29,7 @@ class Rental(db.Model):
 
 
     def json(self):
-        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate, "PricePerDay" : self.pricePerDay}
+        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate, "pricePerDay" : self.pricePerDay}
 
 
 @app.route("/rental")
@@ -82,6 +82,9 @@ def get_rental_info():
     return jsonify(
         {
             "code": 404,
+            "data":{
+                "rentalId": rentId
+            },
             "message": "There are no listings."
         }
     ), 404
@@ -109,7 +112,7 @@ def create_rental_listing():
         return jsonify(
             {
                 "code": 500,
-                "message": "An error occurred creating the listing."
+                "message": "An error occurred while creating the listing."
             }
         ), 500
 
@@ -139,6 +142,9 @@ def update_rental_status():
     return jsonify(
         {
             "code": 404,
+            "data":{
+                "rentalId": rentId
+            },
             "message": "Error in updating"
         }
         ), 404
