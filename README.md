@@ -32,10 +32,10 @@ We should see a success message such as configmap/rabbitmq-config created
 <hr>
 Step 4: Creating secrets for API keys and database password
 
-`kubectl create secret generic db-pw --from-literal=password=1234` <br>
-`kubectl create secret generic gmaps-key --from-literal=APIKEY=AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE` <br>
-`kubectl create secret generic stripe-key --from-literal=STRIPE_KEY=sk_test_51OuU6ERwhPaLZQ7Jc38nX5rpjYnhJbtspXQ5EMvskpjbnsDTotjrA1GciZZKFUyPBWwZnO0IGlVsdqmFWlX4Rgba000ObBunlu` <br>
-`kubectl create secret generic gmail-pass --from-literal=GMAIL_APP_PASS=vzsoycpwksezvrey` <br>
+`kubectl create secret generic db-pw --from-literal=password=<yourPassword>` <br>
+`kubectl create secret generic gmaps-key --from-literal=APIKEY=<yourAPIKey>` <br>
+`kubectl create secret generic stripe-key --from-literal=STRIPE_KEY=<yourStripeAPIKey>` <br>
+`kubectl create secret generic gmail-pass --from-literal=GMAIL_APP_PASS=yourGmailPass` <br>
 
 We should see a success message such as secret/db-pw created
 <hr>
