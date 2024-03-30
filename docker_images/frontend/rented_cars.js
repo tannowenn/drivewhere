@@ -1,13 +1,14 @@
 // when user presses on their rented cars
 // getting data from rental DB
 window.onload = function () {
-    fetch("http://localhost:5002/rental/rented", {
+    fetch("http://localhost:5002/rental", {
         method: "POST",
         headers: {
             "Content-Type" : "application/json"
         },
         body: JSON.stringify({
-            address: "160139"
+            address: "160139",
+            status: "rented"
         })
     })
     .then(response => {

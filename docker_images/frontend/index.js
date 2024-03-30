@@ -9,7 +9,8 @@ function getOpenListing() {
             "Content-Type" : "application/json"
         },
         body: JSON.stringify({
-            address: address
+            address: address,
+            status: "open"
         })
     })
     .then(response => {
