@@ -1,3 +1,4 @@
+// when user presses on their rented cars
 // getting data from rental DB
 window.onload = function () {
     fetch("http://localhost:5002/rental", {
@@ -42,73 +43,17 @@ window.onload = function () {
 
         
     })
-
-    .catch(error => {
-        console.error("Error fetching data:", error)
-    })
 }
 
-// handle new post
-function createRental() {
-    var userId = 3 
-    var carModel = document.getElementById("carModel").value
-    var carMake = document.getElementById("carMake").value
-    var capacity = document.getElementById("capacity").value
-    var carPlate = document.getElementById("carPlate").value
-    var address = document.getElementById("address").value
-    var pricePerDay = document.getElementById("pricePerDay").value
-
+//owner completing the rental
+function completeRental(URL, rentalId) {
     let jsonBody = {
-        "userId": userId,
-        "carModel": carModel,
-        "carMake": carMake,
-        "capacity": capacity,
-        "carPlate": carPlate,
-        "address": address,
-        "pricePerDay": pricePerDay,
-        "status": "open"
+        "rentalId": rentalId
     }
     
-    fetch("http://localhost:5002/rental/create",
+    fetch(URL,
     {
-        method: "POST",
-        headers: {
-            "Content-type": "application/json"
-        },
-        body: JSON.stringify(jsonBody)
-    })
-    .then(response => response.json())
-    .then(response => {
-        switch (response["code"]) {
-            case 201:
-                console.log(response)
-                break
-            default:
-                console.log(`ERROR: ${response["code"]}: ${response["message"]}`)
-        }
-    })
-    .catch(error => {
-        // Errors when calling the service; such as network error, 
-        // service offline, etc
-        console.log(error);
-    })
-}
-
-// user renting a car
-function requestRental() {
-    var rentalId = String(JSON.parse(localStorage.getItem("rentalId")))
-    var userId = "3" //renter's userId
-    var days = document.getElementById("daysRent").value
-
-    let jsonBody = {
-        "rentalId": rentalId,
-        "userId": userId,
-        "days": days
-    }
-    
-    fetch("http://localhost:5100/master/rental/request",
-    {
-        method: "POST",
+        method: "PUT",
         headers: {
             "Content-type": "application/json"
         },
@@ -118,7 +63,13 @@ function requestRental() {
     .then(response => {
         switch (response["code"]) {
             case 200:
-                window.location.href = response["data"]["url"]
+                console.log("success!")
+                break
+            case 400:
+                console.log("that rental has already been returned")
+                break
+            case 404:
+                console.log("rental not found")
                 break
             default:
                 console.log(`ERROR: ${response["code"]}: ${response["message"]}`)
@@ -129,9 +80,4 @@ function requestRental() {
         // service offline, etc
         console.log(error);
     })
-}
-
-//adding rentalId to localStorage
-function addRentalId(rentalId) {
-    localStorage.setItem("rentalId", JSON.stringify(rentalId))
 }
