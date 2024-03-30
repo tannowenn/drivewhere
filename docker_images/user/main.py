@@ -5,7 +5,7 @@ from os import environ
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
+PORT = environ.get('PORT') or 5001
 
 db = SQLAlchemy(app)
 
@@ -71,7 +71,7 @@ def find_by_userId(userId):
     return jsonify(
         {
             "code": 404,
-            "message": "User not found."
+            "message": f"User {userId} not found."
         }
     ), 404
 
@@ -109,6 +109,6 @@ def create_user():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=True)
 
 

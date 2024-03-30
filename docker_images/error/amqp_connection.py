@@ -2,12 +2,8 @@ import time
 import pika
 from os import environ
 
-hostname = environ.get('hostname')  ### # default hostname
-port = 5672 ###  # default port
-
-# Instead of hardcoding the values, we can also get them from the environ as shown below
-# hostname = environ.get('hostname') #localhost
-# port = environ.get('port')         #5672 
+hostname = environ.get('rabbit_host') or 'rabbitmq' ### # default hostname
+port = environ.get('rabbit_port') or 5672 ###  # default port
 
 
 # function to create a connection to the broker

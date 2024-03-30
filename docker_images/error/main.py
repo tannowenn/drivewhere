@@ -3,15 +3,17 @@ import amqp_connection
 import json
 import pika
 from os import environ
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from flask import current_app
+from datetime import datetime, timezone, timedelta
+
+# Define the target timezone
+target_timezone = timezone(timedelta(hours=8))
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL')
+app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://is213@host.docker.internal:3306/error'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+PORT = environ.get('PORT') or 5005
 db = SQLAlchemy(app)
 
 class Error(db.Model):
@@ -21,7 +23,7 @@ class Error(db.Model):
     code = db.Column(db.Integer, nullable=False)
     message = db.Column(db.String(255), nullable=False)
     service = db.Column(db.String(32), nullable=False)
-    date_time = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    date_time = db.Column(db.DateTime, nullable=False, default=datetime.now().astimezone(target_timezone))
 
     def __init__(self, code, message, service):
         self.code = code
@@ -37,7 +39,7 @@ class Error(db.Model):
             'date_time': self.date_time,
         }
 
-e_queue_name = 'Error'
+e_queue_name = environ.get('e_queue_name') or 'Error'
 
 def receiveError(channel):
     try:
@@ -75,7 +77,7 @@ def processError(message):
 if __name__ == "__main__":
     from threading import Thread
 
-    web_server_thread = Thread(target=app.run, kwargs={"host":"0.0.0.0", "port":5005})
+    web_server_thread = Thread(target=app.run, kwargs={"host":"0.0.0.0", "port":PORT})
     web_server_thread.start()
 
     with app.app_context():

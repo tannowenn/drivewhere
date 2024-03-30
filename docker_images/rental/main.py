@@ -1,15 +1,19 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 from os import environ
 
 import googlemaps
 
 app = Flask(__name__)
+CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+PORT =  5002
 
-Api_key = environ.get("APIKEY")
+Api_key = environ.get('GMAPS_KEY')
+
 db = SQLAlchemy(app)
 
 
@@ -28,13 +32,13 @@ class Rental(db.Model):
 
 
     def json(self):
-        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate, "PricePerDay" : self.pricePerDay}
+        return {"rentalId": self.rentalId, "status": self.status, "userId": self.userId, "address": self.address, "carModel" : self.carModel, "carMake" : self.carMake, "capacity" : self.capacity, "carPlate" : self.carPlate, "pricePerDay" : self.pricePerDay}
 
 
-@app.route("/rental")
+@app.route("/rental", methods=['POST'])
 def get_open_rental_listings():
-    rental_list = db.session.scalars(db.select(Rental).filter_by(status="open")).all()
     data = request.get_json()
+    rental_list = db.session.scalars(db.select(Rental).filter_by(status=data['status'])).all()
     if len(rental_list):
         rental_dict = []
         for listing in rental_list:
@@ -81,6 +85,9 @@ def get_rental_info():
     return jsonify(
         {
             "code": 404,
+            "data":{
+                "rentalId": rentId
+            },
             "message": "There are no listings."
         }
     ), 404
@@ -108,7 +115,7 @@ def create_rental_listing():
         return jsonify(
             {
                 "code": 500,
-                "message": "An error occurred creating the listing."
+                "message": "An error occurred while creating the listing."
             }
         ), 500
 
@@ -138,10 +145,13 @@ def update_rental_status():
     return jsonify(
         {
             "code": 404,
+            "data":{
+                "rentalId": rentId
+            },
             "message": "Error in updating"
         }
         ), 404
     
 
 if __name__== '__main__':
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=True)

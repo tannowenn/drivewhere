@@ -1,8 +1,8 @@
 import stripe
 import math
+import requests
 
 from os import environ
-from invokes import invoke_http
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -15,12 +15,14 @@ target_timezone = timezone(timedelta(hours=8))
 stripe.api_key = environ.get('STRIPE_KEY')
 
 # Global variables
-master_continue_URL = environ.get('master_continue_URL')
-master_cancel_URL = environ.get('master_cancel_URL')
 COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
-PAYMENT_PORT = 5004
+PORT = environ.get('PORT') or 5004
+MASTER_HOST = environ.get('MASTER_HOST') or "localhost"
+MASTER_PORT = environ.get('MASTER_PORT') or 5100
+if MASTER_HOST == "master":
+    MASTER_HOST = "localhost"
 
 app = Flask(__name__)
 CORS(app)
@@ -57,20 +59,22 @@ def success():
     payee_id = request.args.get('payee_id')
         
     payment = Payment(rentalId=rental_id, payerId=payer_id, payeeId=payee_id, amountSgd=payment_amount/100, status="hold")
-    headers = {"Content-Type": "application/json"}
     try:
         db.session.add(payment)
         db.session.commit()
-        json_data = {"code": 201, "data": {"renterEmailAddress": request.args.get('renter_email_address'), "ownerEmailAddress": request.args.get('owner_email_address'), "rentalId": rental_id}}
-        return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
+        return jsonify(
+            {
+                "code": 201
+            }
+        )
 
     except Exception as e:
-        json_data = {"code": 500, "message": "An error occurred while processing payment. " + str(e)}
-        return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
-
-@app.route('/payment/cancel')
-def cancel():
-    return invoke_http(url=master_continue_URL, method='GET')
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred while processing payment. " + str(e)
+            }
+        )
 
 @app.route('/payment/rent', methods=['POST'])
 def rent_car():
@@ -90,8 +94,8 @@ def rent_car():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://payment-service:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=f'http://localhost:{PAYMENT_PORT}/payment/cancel',
+            success_url=f"http://{MASTER_HOST}:{MASTER_PORT}/master/rental/continue?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=f'http://{MASTER_HOST}:{MASTER_PORT}/master/rental/cancel',
         )
 
         return jsonify(
@@ -166,4 +170,4 @@ def return_car():
         ), 500
 
 if __name__== '__main__':
-    app.run(host="0.0.0.0", port=PAYMENT_PORT, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=True)

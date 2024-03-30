@@ -2,7 +2,7 @@ import time
 import pika
 from os import environ
 
-hostname = environ.get('hostname')
+hostname = environ.get('rabbit_host') or 'localhost' ###
 port = 5672 ###
 
 # Instead of hardcoding the values, we can also get them from the environ as shown below

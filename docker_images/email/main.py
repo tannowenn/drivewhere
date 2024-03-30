@@ -9,7 +9,7 @@ from email.message import EmailMessage
 GMAIL_APP_PASS = environ.get('GMAIL_APP_PASS')
 EMAIL_SENDER = "drivewhere1@gmail.com"
 
-a_queue_name = 'Email' # queue to be subscribed by Email microservice
+a_queue_name = environ.get('a_queue_name') or 'Email' # queue to be subscribed by Email microservice
 
 def send_email(email_receiver, subject, body):
 
@@ -19,9 +19,9 @@ def send_email(email_receiver, subject, body):
     em['Subject'] = subject
     em.set_content(body)
 
-    
+
     with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
-        smtp.starttls()  # Enable TLS
+        smtp.starttls()
         smtp.login(EMAIL_SENDER, GMAIL_APP_PASS)
         smtp.sendmail(EMAIL_SENDER, email_receiver, em.as_string())
 

@@ -55,7 +55,7 @@ Open the dashboard: <br>
 If any deployments/pods/statefulsets appear as failed, give it a while as it is taking awhile to mount the PVC!
 
 If everything is successful, you should see this
-![Kubernetes Dashboard](image.png)
+![Kubernetes Dashboard](/images/image.png)
 <hr>
 Step 6: Adding data to the database
 We need to portforward the db-service to localhost to add the data!
@@ -70,7 +70,7 @@ Step 6: Run through the scenarios
 blah blah blah
 ...
 If it is successful, you should see two emails
-![email sent by drivewhere1@gmail.com](image-1.png)
+![email sent by drivewhere1@gmail.com](/images/image-1.png)
 
 When user return the car successfully, you should see two emails
-![email sent by drivewhere1@gmail.com](image-2.png)
+![email sent by drivewhere1@gmail.com](/images/image-2.png)
