@@ -71,7 +71,7 @@ def find_by_userId(userId):
     return jsonify(
         {
             "code": 404,
-            "message": "User not found."
+            "message": f"User {userId} not found."
         }
     ), 404
 
