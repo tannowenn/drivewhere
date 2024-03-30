@@ -1,2 +1,76 @@
-# drivewhere
+
 drive here drive there drive everywhere
+
+
+# Deploying on Kubernetes 
+We will be using Minikube to be deployed locally. 
+Some prerequities before running this project on Kubernetes:
+- Have Docker installed on the machine
+- Have some form of SQL client (such as mySQL workbench)
+- 20 GB of free space
+
+<hr>
+Step 1: Install Minikube
+We can install Minikube through this link (https://minikube.sigs.k8s.io/docs/start/) and only follow Step 1 of the documentation
+<hr>
+Step 2: Start up the cluster
+After installation, we can start up the cluster! Let's name our cluster drivewhere and give it two nodes <br>
+
+`minikube start --nodes 2 --profile drivewhere`
+Starting minikube will take some time (and also some disk space!)
+
+We can ensure we have 2 nodes (1 master, 1 slave) by typing: <br>
+`kubectl get nodes`
+<hr>
+Step 3: Creating configMap for AMQP
+We need to create the configMap for the setup of RabbitMQ, navigate to the kubernetes folder on the command line and enter these two lines 
+
+`kubectl create configmap rabbitmq-config --from-file=rabbitmq.config=rabbitmq.config` <br>
+`kubectl create configmap rabbitmq-definitions --from-file=rabbitmq.config=rabbitmq_definitions.json`
+
+We should see a success message such as configmap/rabbitmq-config created
+<hr>
+Step 4: Creating secrets for API keys and database password
+
+`kubectl create secret generic db-pw --from-literal=password=<yourPassword>` <br>
+`kubectl create secret generic gmaps-key --from-literal=APIKEY=<yourAPIKey>` <br>
+`kubectl create secret generic stripe-key --from-literal=STRIPE_KEY=<yourStripeAPIKey>` <br>
+`kubectl create secret generic gmail-pass --from-literal=GMAIL_APP_PASS=yourGmailPass` <br>
+
+We should see a success message such as secret/db-pw created
+<hr>
+Step 5: Adding the deployment to the nodes
+
+`kubectl apply -f amqp-deployment.yaml` <br>
+`kubectl apply -f db-statefulset.yaml` <br>
+`kubectl apply -f email-deployment.yaml`  <br>
+`kubectl apply -f error-deployment.yaml`  <br>
+`kubectl apply -f master-deployment.yaml`  <br>
+`kubectl apply -f payment-deployment.yaml`  <br>
+`kubectl apply -f rental-deployment.yaml`  <br>
+`kubectl apply -f user-deployment.yaml` <br>
+
+Open the dashboard: <br>
+`minikube dashboard -p drivewhere` <br>
+If any deployments/pods/statefulsets appear as failed, give it a while as it is taking awhile to mount the PVC!
+
+If everything is successful, you should see this
+![Kubernetes Dashboard](image.png)
+<hr>
+Step 6: Adding data to the database
+We need to portforward the db-service to localhost to add the data!
+
+`kubectl port-forward service/db-service 3306:3306`
+
+- Open up MySQL and click on the localinstance and enter the password 1234
+- Copy the sql code from db.sql in the Kubernetes file and run it in the workbench
+- If you would like to test the email, add your own email address to the database!
+
+Step 6: Run through the scenarios
+blah blah blah
+...
+If it is successful, you should see two emails
+![email sent by drivewhere1@gmail.com](image-1.png)
+
+When user return the car successfully, you should see two emails
+![email sent by drivewhere1@gmail.com](image-2.png)

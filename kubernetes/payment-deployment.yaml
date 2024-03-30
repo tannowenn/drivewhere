@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment
+  template:
+    metadata:
+      labels:
+        app: payment
+    spec:
+      containers:
+        - name: payment
+          image: brandonlim99/drivewhere:payment_final
+          ports:
+            - containerPort: 5004
+          env: 
+          - name: dbURL
+            value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
+          - name: STRIPE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: stripe-key
+                key: STRIPE_KEY
+          - name: master_continue_URL
+            value: "http://master-service:5100/master/rental/continue"
+          - name: master_cancel_URL
+            value: "http://master-service:5100/master/rental/cancel"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+spec:
+  selector:
+    app: payment
+  ports:
+    - protocol: TCP
+      port: 5004
+      targetPort: 5004

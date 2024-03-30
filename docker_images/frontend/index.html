@@ -32,44 +32,13 @@
     <div class="container text-center mt-3">
 
       <h1>Want to list your car?</h1>
-      <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#listingCar">List your car!</button>
+      <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#listingCar" >List your car!</button>
 
       <h1 class="mt-5">Rent our available cars right now!</h1>
-      <div id="carList" class="mt-5 d-flex justify-content-center">
+      <div class="mt-5 d-flex justify-content-center">
           
-          <!-- dummy data -->
-          <div class="row">
-            <div class="col-md-4">
-              <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                  <h5 class="card-title">Car model</h5>
-                  <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: X | Price per day: Y</h6>
-                  <p class="card-text">X km away from you <br>Carplate: 1234567</p>
-                  <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rentCar">Rent</button></p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                  <h5 class="card-title">Car model</h5>
-                  <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: X | Price per day: Y</h6>
-                  <p class="card-text">X km away from you <br>Carplate: 1234567</p>
-                  <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rentCar">Rent</button></p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-4">
-              <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                  <h5 class="card-title">Car model</h5>
-                  <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: X | Price per day: Y</h6>
-                  <p class="card-text">X km away from you <br>Carplate: 1234567</p>
-                  <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rentCar">Rent</button></p>
-                </div>
-              </div>
-            </div>
-          </div>
+          
+          <div class="row" id="carList"></div>
       </div>
     </div>
 
@@ -129,7 +98,7 @@
             <!-- Last Row -->
             <div class="row mt-3 float-end">
 
-              <div class="col"><button type="submit" class="btn btn-primary">Submit</button></div>
+              <div class="col"><button onclick="createRental()" class="btn btn-primary">Submit</button></div>
 
             </div>
 
@@ -165,7 +134,9 @@
             </div>
 
             <div class="row float-end">
-              <class class="col"><button type="submit" class="btn btn-primary">Submit</button></class>
+              <class class="col">
+                <button type="button" class="btn btn-primary" onclick="requestRental()">Submit</button>
+              </class>
 
             </div>
           </form>

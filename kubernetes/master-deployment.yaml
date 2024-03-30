@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: master
-          image: brandonlim99/kubernetes_test:master_amqp.v1
+          image: brandonlim99/drivewhere:master_final
           ports:
             - containerPort: 5100
           env:
@@ -34,3 +34,17 @@ spec:
               value: "rabbitmq-service"
             - name: exchangename
               value: "drivewhere_topic"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: master-service
+spec:
+  selector:
+    app: master
+  ports:
+    - protocol: TCP
+      port: 5100
+      targetPort: 5100
+  type: LoadBalancer
