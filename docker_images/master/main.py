@@ -164,6 +164,7 @@ def continued():
         payee_id = request.args.get('payee_id')
         renter_email_address = request.args.get('renter_email_address')
         owner_email_address = request.args.get('owner_email_address')
+        
         payment_response = invoke_http(f"http://{PAYMENT_HOST}:{PAYMENT_PORT}/payment/success?rental_id={rental_id}&payer_id={payer_id}&payee_id={payee_id}&session_id={session_id}")
         current_code = payment_response["code"]
 
@@ -230,7 +231,11 @@ def continued():
             "code": 500,
             "message": "master/main.py internal error: " + ex_str
         }), 500
-    
+
+@app.route("/master/rental/cancel")
+def cancel():
+    return redirect(f"http://{FRONTEND_HOST}/frontend/index.html")
+
 # for user scenario 3
 @app.route("/master/rental/update", methods=['PUT'])
 def return_car():
