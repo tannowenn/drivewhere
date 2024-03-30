@@ -3,11 +3,12 @@ import amqp_connection
 import json
 import pika
 from os import environ
-import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
-from flask import current_app
+from datetime import datetime, timezone, timedelta
+
+# Define the target timezone
+target_timezone = timezone(timedelta(hours=8))
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://is213@host.docker.internal:3306/error'
@@ -22,7 +23,7 @@ class Error(db.Model):
     code = db.Column(db.Integer, nullable=False)
     message = db.Column(db.String(255), nullable=False)
     service = db.Column(db.String(32), nullable=False)
-    date_time = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    date_time = db.Column(db.DateTime, nullable=False, default=datetime.now().astimezone(target_timezone))
 
     def __init__(self, code, message, service):
         self.code = code
