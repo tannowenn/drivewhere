@@ -19,8 +19,10 @@ COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
 PORT = environ.get('PORT') or 5004
-MASTER_HOST = environ.get('MASTER_HOST') or "master"
+MASTER_HOST = environ.get('MASTER_HOST') or "localhost"
 MASTER_PORT = environ.get('MASTER_PORT') or 5100
+if MASTER_HOST == "master":
+    MASTER_HOST = "localhost"
 
 app = Flask(__name__)
 CORS(app)
