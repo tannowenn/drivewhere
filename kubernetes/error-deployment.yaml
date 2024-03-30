@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: error
-          image: brandonlim99/kubernetes_test:error_amqp.v1
+          image: brandonlim99/drivewhere:error_final
           ports:
             - containerPort: 5005
           env:
@@ -22,3 +22,16 @@ spec:
               value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
             - name: hostname
               value : "rabbitmq-service"
+
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: error-service
+spec:
+  selector:
+    app: error
+  ports:
+    - protocol: TCP
+      port: 5005
+      targetPort: 5005
