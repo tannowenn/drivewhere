@@ -43,7 +43,7 @@ services:
     image: ryan2409/payment:esd
     restart: always
     environment:
-      master_continue_URL: "http://master:5100/master/rental/continue"
+      master_continue_URL: "http://${MASTER_HOST}:${MASTER_PORT}/master/rental/continue"
       dbURL: ${PAYMENT_dbURL}
       PORT: ${PAYMENT_PORT}
       STRIPE_KEY: ${STRIPE_KEY}
@@ -81,7 +81,7 @@ services:
       rabbit_port: ${RABBIT_PORT}
       e_queue_name: ${ERROR_QUEUE}
       PYTHONUNBUFFERED: 1
-      dbURL: mysql+mysqlconnector://is213@host.docker.internal:3306/error
+      dbURL: ${ERROR_dbURL}
       PORT: ${ERROR_PORT}
   
   ###############################################
@@ -121,11 +121,11 @@ services:
     environment:
       rabbit_host: ${RABBIT_HOST}
       rabbit_port: ${RABBIT_PORT}
-      rental_get_URL: http://rental:${RENTAL_PORT}/rental/info 
-      rental_update_URL: http://rental:${RENTAL_PORT}/rental/update 
-      user_get_URL: http://user:${USER_PORT}/user/
-      payment_submit_URL: http://payment:${PAYMENT_PORT}/payment/rent
-      payment_release_URL: http://payment:${PAYMENT_PORT}/payment/return
+      rental_get_URL: http://${RENTAL_HOST}:${RENTAL_PORT}/rental/info 
+      rental_update_URL: http://${RENTAL_HOST}:${RENTAL_PORT}/rental/update 
+      user_get_URL: http://${USER_HOST}:${USER_PORT}/user/
+      payment_submit_URL: http://${PAYMENT_HOST}:${PAYMENT_PORT}/payment/rent
+      payment_release_URL: http://${PAYMENT_HOST}:${PAYMENT_PORT}/payment/return
       PORT: ${MASTER_PORT}
       PYTHONUNBUFFERED: 1
     ports:
