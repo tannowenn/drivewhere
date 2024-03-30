@@ -15,6 +15,7 @@ app = Flask(__name__)
 CORS(app)
 
 PORT = environ.get('PORT') or 5100
+FRONTEND_HOST = environ.get('FRONTEND_HOST') or "localhost"
 rental_update_URL = environ.get('rental_update_URL') or "http://host.docker.internal:5002/rental/update" 
 rental_get_URL = environ.get('rental_get_URL') or "http://host.docker.internal:5002/rental/info"
 
@@ -205,11 +206,11 @@ def continued():
             email_amqp = email(result)
 
             # renturn everything success
-            return {
-                "code": 200,
-                "message": "Everything is a success, car is rented"
-
-            }
+            # return {
+            #     "code": 200,
+            #     "message": "Everything is a success, car is rented"
+            # }
+            return invoke_http(f"http://{FRONTEND_HOST}/frontend/index.html")
             
 
         except Exception as e:
