@@ -50,8 +50,6 @@ services:
       MASTER_PORT: ${MASTER_PORT}
       STRIPE_KEY: ${STRIPE_KEY}
       PYTHONUNBUFFERED: 1
-    ports:
-      - "${PAYMENT_PORT}:${PAYMENT_PORT}"
   ###############################################
   # rabbitMQ: The amqp
   ###############################################
