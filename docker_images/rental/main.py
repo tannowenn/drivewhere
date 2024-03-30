@@ -62,6 +62,35 @@ def get_open_rental_listings():
             "message": "There are no listings."
         }
     ), 404
+    
+@app.route("/rental/rented", methods=['POST'])
+def get_rented_listings():
+    rental_list = db.session.scalars(db.select(Rental).filter_by(status="rented")).all()
+    data = request.get_json()
+    if len(rental_list):
+        rental_dict = []
+        for listing in rental_list:
+            listing = listing.json()
+            gmaps = googlemaps.Client(key=Api_key)
+            source = data['address']
+            destination = listing['address']
+            direction_result = gmaps.directions(source,destination)
+            listing['distance'] = direction_result[0]['legs'][0]['distance']['text']
+            rental_dict.append(listing)
+        return jsonify(
+            {
+                "code": 200,
+                "data": {
+                    "rental_list": [listing for listing in rental_dict]
+                }
+            }
+        )
+    return jsonify(
+        {
+            "code": 404,
+            "message": "There are no listings."
+        }
+    ), 404
 
 @app.route("/rental/info")
 def get_rental_info():

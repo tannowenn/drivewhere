@@ -1,7 +1,7 @@
 // when user presses on their rented cars
 // getting data from rental DB
 window.onload = function () {
-    fetch("http://localhost:5002/rental", {
+    fetch("http://localhost:5002/rental/rented", {
         method: "POST",
         headers: {
             "Content-Type" : "application/json"
@@ -18,27 +18,31 @@ window.onload = function () {
     })
     .then(data => {
         console.log("Data:", data.data.rental_list)
-        var documentSelector = document.getElementById("carList")
+        var documentSelector = document.getElementById("rentedCarList")
         const cars = data.data.rental_list
-
+        
         for (i=0; i<cars.length; i++) {
-            var div = document.createElement("div")
-            div.classList.add("col-md-4")
-            div.classList.add("mb-3")
-            var car = `
-              <div class="card" style="width: 18rem;">
-                <div class="card-body">
-                  <h5 class="card-title">${cars[i].carMake}</h5>
-                  <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: ${cars[i].capacity} | Price per day: ${cars[i].pricePerDay}</h6>
-                  <p class="card-text">${cars[i].distance} away from you <br>Carplate: ${cars[i].carPlate}</p>
-                  <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rentCar" onclick="addRentalId(${cars[i].rentalId})">Rent</button></p>
-                  
-                </div>
-              </div>
-            `
-            
-            div.innerHTML = car
-            documentSelector.appendChild(div)
+
+            // harded coded value user 3 (which is us rn)
+            if (cars[i].userId == "3") {
+                var div = document.createElement("div")
+                div.classList.add("col-md-4")
+                div.classList.add("mb-3")
+                var car = `
+                  <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                      <h5 class="card-title">${cars[i].carMake}</h5>
+                      <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: ${cars[i].capacity} | Price per day: ${cars[i].pricePerDay}</h6>
+                      <p class="card-text">${cars[i].distance} away from you <br>Carplate: ${cars[i].carPlate}</p>
+                      <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#returnCar" onclick="${addReturnRentalId(cars[i].rentalId)}">Return</button></p>
+                      
+                    </div>
+                  </div>
+                `
+                
+                div.innerHTML = car
+                documentSelector.appendChild(div)
+            } 
         }
 
         
@@ -46,12 +50,15 @@ window.onload = function () {
 }
 
 //owner completing the rental
-function completeRental(URL, rentalId) {
+function completeRental() {
+
+    var rentalId = JSON.parse(localStorage.getItem("returnRentalId"))
+    console.log(rentalId)
     let jsonBody = {
         "rentalId": rentalId
     }
     
-    fetch(URL,
+    fetch("http://localhost:5100/master/rental/update",
     {
         method: "PUT",
         headers: {
@@ -64,12 +71,7 @@ function completeRental(URL, rentalId) {
         switch (response["code"]) {
             case 200:
                 console.log("success!")
-                break
-            case 400:
-                console.log("that rental has already been returned")
-                break
-            case 404:
-                console.log("rental not found")
+                window.alert("Your car has successfully been returned and the money has been released to you!")
                 break
             default:
                 console.log(`ERROR: ${response["code"]}: ${response["message"]}`)
@@ -80,4 +82,9 @@ function completeRental(URL, rentalId) {
         // service offline, etc
         console.log(error);
     })
+}
+
+//adding rentalId to localStorage
+function addReturnRentalId(returnRentalId) {
+    localStorage.setItem("returnRentalId", JSON.stringify(returnRentalId))
 }
