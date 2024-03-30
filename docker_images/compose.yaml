@@ -45,6 +45,7 @@ services:
     environment:
       master_continue_URL: "http://${MASTER_HOST}:${MASTER_PORT}/master/rental/continue"
       dbURL: ${PAYMENT_dbURL}
+      HOST: ${PAYMENT_HOST}
       PORT: ${PAYMENT_PORT}
       STRIPE_KEY: ${STRIPE_KEY}
       PYTHONUNBUFFERED: 1

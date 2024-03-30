@@ -21,6 +21,7 @@ COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
 PORT = environ.get('PORT') or 5004
+HOST = environ.get('HOST') or "localhost"
 
 app = Flask(__name__)
 CORS(app)
@@ -90,8 +91,8 @@ def rent_car():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://localhost:{PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=f'http://localhost:{PORT}/payment/cancel',
+            success_url=f"http://{HOST}:{PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=f'http://{HOST}:{PORT}/payment/cancel',
         )
 
         return jsonify(
