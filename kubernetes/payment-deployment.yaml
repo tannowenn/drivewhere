@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: payment
-          image: brandonlim99/drivewhere:payment_final
+          image: brandonlim99/drivewhere:payment
           ports:
             - containerPort: 5004
           env: 
@@ -25,10 +25,10 @@ spec:
               secretKeyRef:
                 name: stripe-key
                 key: STRIPE_KEY
-          - name: master_continue_URL
-            value: "http://master-service:5100/master/rental/continue"
-          - name: master_cancel_URL
-            value: "http://master-service:5100/master/rental/cancel"
+          - name: MASTER_HOST
+            value: "localhost"
+          - name: MASTER_PORT
+            value: "5100"
 
 ---
 apiVersion: v1
