@@ -3,7 +3,7 @@ import math
 import requests
 
 from os import environ
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timezone, timedelta
@@ -65,7 +65,8 @@ def success():
         db.session.add(payment)
         db.session.commit()
         json_data = {"code": 201, "data": {"renterEmailAddress": request.args.get('renter_email_address'), "ownerEmailAddress": request.args.get('owner_email_address'), "rentalId": rental_id}}
-        return requests.post(url=master_continue_URL, json=json_data, headers=headers)
+        response = requests.post(url=master_continue_URL, json=json_data, headers=headers).json()
+        return redirect(response["data"]["url"])
 
     except Exception as e:
         json_data = {"code": 500, "message": "An error occurred while processing payment. " + str(e)}

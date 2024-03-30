@@ -206,12 +206,11 @@ def continued():
             email_amqp = email(result)
 
             # renturn everything success
-            # return {
-            #     "code": 200,
-            #     "message": "Everything is a success, car is rented"
-            # }
-            return invoke_http(f"http://{FRONTEND_HOST}/frontend/index.html")
-            
+            return {
+                "code": 200,
+                "message": "Everything is a success, car is rented",
+                "data": {"redirect_url": f"http://{FRONTEND_HOST}/frontend/index.html"}
+            }            
 
         except Exception as e:
             # Unexpected error in code
