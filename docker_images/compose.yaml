@@ -29,6 +29,7 @@ services:
     environment:
       dbURL: ${RENTAL_dbURL}
       PORT: ${RENTAL_PORT}
+      GMAPS_KEY: ${GMAPS_KEY}
       PYTHONUNBUFFERED: 1
     ports:
       - "${RENTAL_PORT}:${RENTAL_PORT}"
