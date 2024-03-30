@@ -10,7 +10,7 @@ CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-PORT =  5002
+PORT = environ.get('PORT') or 5002
 
 Api_key = environ.get('GMAPS_KEY')
 
