@@ -10,7 +10,8 @@ function getOpenListing() {
         },
         body: JSON.stringify({
             address: address,
-            status: "open"
+            status: "open",
+            userId: null
         })
     })
     .then(response => {

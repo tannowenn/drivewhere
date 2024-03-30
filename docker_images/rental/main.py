@@ -38,7 +38,10 @@ class Rental(db.Model):
 @app.route("/rental", methods=['POST'])
 def get_open_rental_listings():
     data = request.get_json()
-    rental_list = db.session.scalars(db.select(Rental).filter_by(status=data['status'])).all()
+    if data['userId'] is None:
+        rental_list = db.session.scalars(db.select(Rental).filter_by(status=data['status'])).all()
+    else:
+        rental_list = db.session.scalars(db.select(Rental).filter_by(status=data['status'], userId=data['userId'])).all()
     if len(rental_list):
         rental_dict = []
         for listing in rental_list:
