@@ -15,15 +15,12 @@ target_timezone = timezone(timedelta(hours=8))
 stripe.api_key = environ.get('STRIPE_KEY')
 
 # Global variables
-master_continue_URL = environ.get('master_continue_URL') or "http://host.docker.internal:5100/master/rental/continue"
-master_cancel_URL = environ.get('master_cancel_URL') or "http://host.docker.internal:5100/master/rental/cancel"
 COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
 PORT = environ.get('PORT') or 5004
-HOST = environ.get('HOST') or "localhost"
-if HOST == "payment":
-    HOST = "localhost"
+MASTER_HOST = environ.get('MASTER_HOST') or "master"
+MASTER_PORT = environ.get('MASTER_PORT') or 5100
 
 app = Flask(__name__)
 CORS(app)
@@ -60,21 +57,22 @@ def success():
     payee_id = request.args.get('payee_id')
         
     payment = Payment(rentalId=rental_id, payerId=payer_id, payeeId=payee_id, amountSgd=payment_amount/100, status="hold")
-    headers = {"Content-Type": "application/json"}
     try:
         db.session.add(payment)
         db.session.commit()
-        json_data = {"code": 201, "data": {"renterEmailAddress": request.args.get('renter_email_address'), "ownerEmailAddress": request.args.get('owner_email_address'), "rentalId": rental_id}}
-        response = requests.post(url=master_continue_URL, json=json_data, headers=headers).json()
-        return redirect(response["data"]["redirect_url"])
+        return jsonify(
+            {
+                "code": 201
+            }
+        )
 
     except Exception as e:
-        json_data = {"code": 500, "message": "An error occurred while processing payment. " + str(e)}
-        return requests.post(url=master_continue_URL, json=json_data, headers=headers)
-
-@app.route('/payment/cancel')
-def cancel():
-    return requests.get(url=master_continue_URL)
+        return jsonify(
+            {
+                "code": 500,
+                "message": "An error occurred while processing payment. " + str(e)
+            }
+        )
 
 @app.route('/payment/rent', methods=['POST'])
 def rent_car():
@@ -94,8 +92,8 @@ def rent_car():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://{HOST}:{PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=f'http://{HOST}:{PORT}/payment/cancel',
+            success_url=f"http://{MASTER_HOST}:{MASTER_PORT}/master/rental/continue?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=f'http://{MASTER_HOST}:{MASTER_PORT}/master/rental/cancel',
         )
 
         return jsonify(
