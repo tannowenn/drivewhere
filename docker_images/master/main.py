@@ -16,6 +16,8 @@ CORS(app)
 
 PORT = environ.get('PORT') or 5100
 FRONTEND_HOST = environ.get('FRONTEND_HOST') or "localhost"
+PAYMENT_HOST = environ.get('PAYMENT_HOST') or "payment"
+PAYMENT_PORT = environ.get('PAYMENT_PORT') or 5004
 rental_update_URL = environ.get('rental_update_URL') or "http://host.docker.internal:5002/rental/update" 
 rental_get_URL = environ.get('rental_get_URL') or "http://host.docker.internal:5002/rental/info"
 
@@ -153,82 +155,79 @@ def rent_car():
     }), 400
 
 # continued scenario 2
-@app.route("/master/rental/continue", methods=['POST'])
+@app.route("/master/rental/continue", methods=['GET'])
 def continued():
-    if request.is_json:
-        try:
-            continue_request = request.get_json()
-            print("\nContinuing rental_request in JSON:", continue_request)
+    try:
+        session_id = request.args.get('session_id')
+        rental_id = request.args.get('rental_id')
+        payer_id = request.args.get('payer_id')
+        payee_id = request.args.get('payee_id')
+        renter_email_address = request.args.get('renter_email_address')
+        owner_email_address = request.args.get('owner_email_address')
+        payment_response = invoke_http(f"http://{PAYMENT_HOST}:{PAYMENT_PORT}/payment/success?rental_id={rental_id}&payer_id={payer_id}&payee_id={payee_id}&session_id={session_id}").json()
 
-            # 5) goes to rental(put) to change rental status to rented
-            # 6) goes to email(amqp) to alert owner and renter
+        print("\nContinuing rental_request")
 
-            current_code = continue_request['code']
-            payment_post2 = continue_request['data']
+        # 5) goes to rental(put) to change rental status to rented
+        # 6) goes to email(amqp) to alert owner and renter
 
-            if current_code not in range(200, 399):
-                #no need send to error amqp as its done already and return stuff here
-                errorHandling(payment_post2, current_code, "payment")
-                return{
-                    "code": current_code,
-                    "data": payment_post2,
-                    "message": "Failure at payment submit"
-                }
-            
-            rentalId = payment_post2['rentalId']
-            ownerEmailAddress = payment_post2['ownerEmailAddress']
-            renterEmailAddress = payment_post2['renterEmailAddress']
-            
-            # start rental put
-            sendData2 = {
-                "rentalId": rentalId,
-                "status": "rented"
+        if current_code not in range(200, 399):
+            #no need send to error amqp as its done already and return stuff here
+            errorHandling(payment_response, current_code, "payment")
+            return{
+                "code": current_code,
+                "data": payment_response,
+                "message": "Failure at payment submit"
             }
+        
+        rentalId = rental_id
+        ownerEmailAddress = owner_email_address
+        renterEmailAddress = renter_email_address
+        
+        # start rental put
+        sendData2 = {
+            "rentalId": rentalId,
+            "status": "rented"
+        }
+        
+        rental_put = updateRental(sendData2)
+        current_code = rental_put['code']
+
+        if current_code not in range(200, 300):
+            #no need send to error amqp as its done already and return stuff here
             
-            rental_put = updateRental(sendData2)
-            current_code = rental_put['code']
-
-            if current_code not in range(200, 300):
-                #no need send to error amqp as its done already and return stuff here
-                
-                return {
-                    "code": current_code,
-                    "data": rental_put["data"],
-                    "message": "Failure at rental put service."
-                }
-
-            # start email amqp
-            result = {
-                'renterEmailAddress': renterEmailAddress,
-                'ownerEmailAddress': ownerEmailAddress,
-                'scenario': "rent"
-            }
-            email_amqp = email(result)
-
-            # renturn everything success
             return {
-                "code": 200,
-                "message": "Everything is a success, car is rented",
-                "data": {"redirect_url": f"http://{FRONTEND_HOST}/frontend/index.html"}
-            }            
+                "code": current_code,
+                "data": rental_put["data"],
+                "message": "Failure at rental put service."
+            }
 
-        except Exception as e:
-            # Unexpected error in code
-            exc_type, exc_obj, exc_tb = sys.exc_info()
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
-            print(ex_str)
+        # start email amqp
+        result = {
+            'renterEmailAddress': renterEmailAddress,
+            'ownerEmailAddress': ownerEmailAddress,
+            'scenario': "rent"
+        }
+        email_amqp = email(result)
 
-            return jsonify({
-                "code": 500,
-                "message": "master/main.py internal error: " + ex_str
-            }), 500
+        # renturn everything success
+        return {
+            "code": 200,
+            "message": "Everything is a success, car is rented",
+            "data": {"redirect_url": f"http://{FRONTEND_HOST}/frontend/index.html"}
+        }            
 
-    # if reached here, not a JSON request.
-    return jsonify({
-        "code": 400,
-        "message": "Invalid JSON input: " + str(request.get_data())
-    }), 400
+    except Exception as e:
+        # Unexpected error in code
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
+        print(ex_str)
+
+        return jsonify({
+            "code": 500,
+            "message": "master/main.py internal error: " + ex_str
+        }), 500
     
 # for user scenario 3
 @app.route("/master/rental/update", methods=['PUT'])
