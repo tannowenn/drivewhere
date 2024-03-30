@@ -1,12 +1,15 @@
 // getting data from rental DB
-window.onload = function () {
+function getOpenListing() {
+
+    var address = document.getElementById("address").value
+
     fetch("http://localhost:5002/rental", {
         method: "POST",
         headers: {
             "Content-Type" : "application/json"
         },
         body: JSON.stringify({
-            address: "160139"
+            address: address
         })
     })
     .then(response => {
@@ -19,7 +22,8 @@ window.onload = function () {
         console.log("Data:", data.data.rental_list)
         var documentSelector = document.getElementById("carList")
         const cars = data.data.rental_list
-
+        // reset everything
+        documentSelector.innerHTML = ""
         for (i=0; i<cars.length; i++) {
             var div = document.createElement("div")
             div.classList.add("col-md-4")
@@ -27,7 +31,7 @@ window.onload = function () {
             var car = `
               <div class="card" style="width: 18rem;">
                 <div class="card-body">
-                  <h5 class="card-title">${cars[i].carMake}</h5>
+                  <h5 class="card-title">${cars[i].carMake} ${cars[i].carModel}</h5>
                   <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: ${cars[i].capacity} | Price per day: ${cars[i].pricePerDay}</h6>
                   <p class="card-text">${cars[i].distance} away from you <br>Carplate: ${cars[i].carPlate}</p>
                   <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rentCar" onclick="addRentalId(${cars[i].rentalId})">Rent</button></p>
