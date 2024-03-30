@@ -14,7 +14,7 @@ import amqp_connection
 app = Flask(__name__)
 CORS(app)
 
-
+PORT = environ.get('PORT') or 5100
 rental_update_URL = environ.get('rental_update_URL') or "http://host.docker.internal:5002/rental/update" 
 rental_get_URL = environ.get('rental_get_URL') or "http://host.docker.internal:5002/rental/info"
 
@@ -535,4 +535,4 @@ def email(result):
 
 if __name__ == "__main__":
     print("This is flask " + os.path.basename(__file__) + " for master microservice")
-    app.run(host="0.0.0.0", port=5100, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=True)
