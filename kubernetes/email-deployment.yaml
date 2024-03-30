@@ -14,16 +14,12 @@ spec:
     spec:
       containers:
         - name: email
-          image: brandonlim99/kubernetes_test:email
+          image: brandonlim99/drivewhere:email_final
           ports:
             - containerPort: 5003
           env:
-            - name: rabbit_host
+            - name: hostname
               value : "rabbitmq-service"
-            - name: rabbit_port
-              value: "5672"
-            - name: a_queue_name
-              value: "Email"
             - name: GMAIL_APP_PASS
               valueFrom:
                 secretKeyRef:

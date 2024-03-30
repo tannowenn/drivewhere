@@ -1,6 +1,67 @@
 
 drive here drive there drive everywhere
 
+# Deploying with Docker
+To deploy the application with the use of Docker, some prerequisites must be made.
+- Have Docker installed on the machine. You can install Docker desktop from this link (https://www.docker.com/get-started) 
+- Have a Docker account. You can create an account from this link (https://hub.docker.com)
+- Have WAMP Server installed on your machine. You can install from this link (https://sourceforge.net/projects/wampserver/)
+- Have an SQL client installed such as mySQL workbench. You can also install from this link (https://dev.mysql.com/downloads/workbench/)
+
+<hr>
+Step 1: Install the folders and files in this repository to your local drive
+<hr>
+Step 2: Move the frontend folder inside docker_images to www folder inside wamp64 folder
+<hr>
+Step 3: Start your WAMP server
+<hr>
+Step 4: Start your Docker desktop
+<hr>
+Step 5: Open your WAMP server and log in using root as your username(no password needed unless using MAMP, then password is root) 
+<hr>
+Step 6: Import the SQL files inside docker_images to create databases in your local machine. Import the following files <br>
+- error.sql
+- payment.sql
+- rental.sql
+- user.sql
+<hr>
+Step 7: Move to the docker_images folder through the terminal <br>
+
+`cd docker_images`
+<hr>
+Step 8: Build all the services by keying the command to your terminal<br>
+
+`docker compose up -d`
+Take note that the services might take a while to setup so be patient!
+<hr>
+Step 9: open your web browser and type in localhost/frontend
+<hr>
+Step 10: Run through the scenarios<br>
+Scenario 1: Owner lists rental car
+- drivewherrrrr
+- drivewherrrrr
+- drivewherrrrr
+<br>
+Scenario 2: Renter rents car
+- drivewherrrrr
+- drivewherrrrr
+- drivewherrrrr
+<br>
+Scenario 3: Renter returns car
+- drivewherrrrr
+- drivewherrrrr
+- drivewherrrrr
+<hr>
+Step 11: Upon completion of your experience input the following to stop the containers.<br>
+
+`docker compose down`
+<br>
+Delete the images if necessary
+<br>
+Turn off your WAMP and docker desktop
+<br>
+We hope you enjoyed experiencing our DriveWhere project
+
 
 # Deploying on Kubernetes 
 We will be using Minikube to be deployed locally. 
@@ -55,7 +116,7 @@ Open the dashboard: <br>
 If any deployments/pods/statefulsets appear as failed, give it a while as it is taking awhile to mount the PVC!
 
 If everything is successful, you should see this
-![Kubernetes Dashboard](/images/image.png)
+![Kubernetes Dashboard](image.png)
 <hr>
 Step 6: Adding data to the database
 We need to portforward the db-service to localhost to add the data!
@@ -70,7 +131,7 @@ Step 6: Run through the scenarios
 blah blah blah
 ...
 If it is successful, you should see two emails
-![email sent by drivewhere1@gmail.com](/images/image-1.png)
+![email sent by drivewhere1@gmail.com](image-1.png)
 
 When user return the car successfully, you should see two emails
-![email sent by drivewhere1@gmail.com](/images/image-2.png)
+![email sent by drivewhere1@gmail.com](image-2.png)

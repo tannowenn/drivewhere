@@ -14,18 +14,14 @@ spec:
     spec:
       containers:
         - name: error
-          image: brandonlim99/kubernetes_test:error
+          image: brandonlim99/drivewhere:error_final
           ports:
             - containerPort: 5005
           env:
             - name: dbURL
               value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
-            - name: rabbit_host
+            - name: hostname
               value : "rabbitmq-service"
-            - name: rabbit_port
-              value: "5672"
-            - name: e_queue_name
-              value: "Error"
 
 --- 
 apiVersion: v1

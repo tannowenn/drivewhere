@@ -3,7 +3,7 @@ import pika
 from os import environ
 
 hostname = environ.get('rabbit_host') or 'localhost' ###
-port = 5672 ###
+port = environ.get('rabbit_port') or 5672 ###
 
 # Instead of hardcoding the values, we can also get them from the environ as shown below
 # hostname = environ.get('hostname') #localhost

@@ -14,12 +14,12 @@ spec:
     spec:
       containers:
         - name: master
-          image: brandonlim99/kubernetes_test:master
+          image: brandonlim99/drivewhere:master_final
           ports:
             - containerPort: 5100
           env:
-            - name: user_get_URL
-              value: "http://user-service:5001/user/"
+            - name: user_URL
+              value: "http://user-service:5001/user"
             - name: rental_update_URL
               value: "http://rental-service:5002/rental/update"
             - name: rental_get_URL
@@ -30,13 +30,7 @@ spec:
               value: "http://payment-service:5004/payment/rent"
             - name: payment_release_URL
               value: "http://payment-service:5004/payment/return"
-            - name: FRONTEND_HOST
-              value: "localhost"
-            - name: PAYMENT_HOST
-              value: "payment-service"
-            - name: PAYMENT_PORT
-              value: "5004"
-            - name: rabbit_host
+            - name: hostname
               value: "rabbitmq-service"
             - name: exchangename
               value: "drivewhere_topic"
