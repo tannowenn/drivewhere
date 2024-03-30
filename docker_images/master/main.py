@@ -164,7 +164,7 @@ def continued():
         payee_id = request.args.get('payee_id')
         renter_email_address = request.args.get('renter_email_address')
         owner_email_address = request.args.get('owner_email_address')
-        payment_response = invoke_http(f"http://{PAYMENT_HOST}:{PAYMENT_PORT}/payment/success?rental_id={rental_id}&payer_id={payer_id}&payee_id={payee_id}&session_id={session_id}").json()
+        payment_response = invoke_http(f"http://{PAYMENT_HOST}:{PAYMENT_PORT}/payment/success?rental_id={rental_id}&payer_id={payer_id}&payee_id={payee_id}&session_id={session_id}")
         current_code = payment_response["code"]
 
         print("\nContinuing rental_request")
