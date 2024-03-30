@@ -22,6 +22,8 @@ PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
 PORT = environ.get('PORT') or 5004
 HOST = environ.get('HOST') or "localhost"
+if HOST == "payment":
+    HOST = "localhost"
 
 app = Flask(__name__)
 CORS(app)
