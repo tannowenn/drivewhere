@@ -43,10 +43,11 @@ services:
     image: ryan2409/payment:esd
     restart: always
     environment:
-      master_continue_URL: "http://${MASTER_HOST}:${MASTER_PORT}/master/rental/continue"
       dbURL: ${PAYMENT_dbURL}
       HOST: ${PAYMENT_HOST}
       PORT: ${PAYMENT_PORT}
+      MASTER_HOST: ${MASTER_HOST}
+      MASTER_PORT: ${MASTER_PORT}
       STRIPE_KEY: ${STRIPE_KEY}
       PYTHONUNBUFFERED: 1
     ports:
@@ -129,6 +130,8 @@ services:
       payment_release_URL: http://${PAYMENT_HOST}:${PAYMENT_PORT}/payment/return
       PORT: ${MASTER_PORT}
       FRONTEND_HOST: ${FRONTEND_HOST}
+      PAYMENT_HOST: ${PAYMENT_HOST}
+      PAYMENT_PORT: ${PAYMENT_PORT}
       PYTHONUNBUFFERED: 1
     ports:
       - "${MASTER_PORT}:${MASTER_PORT}"
