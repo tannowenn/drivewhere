@@ -1,8 +1,8 @@
 import stripe
 import math
+import requests
 
 from os import environ
-from invokes import invoke_http
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -65,15 +65,15 @@ def success():
         db.session.add(payment)
         db.session.commit()
         json_data = {"code": 201, "data": {"renterEmailAddress": request.args.get('renter_email_address'), "ownerEmailAddress": request.args.get('owner_email_address'), "rentalId": rental_id}}
-        return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
+        return requests.post(url=master_continue_URL, json=json_data, headers=headers)
 
     except Exception as e:
         json_data = {"code": 500, "message": "An error occurred while processing payment. " + str(e)}
-        return invoke_http(url=master_continue_URL, method='POST', json=json_data, headers=headers)
+        return requests.post(url=master_continue_URL, json=json_data, headers=headers)
 
 @app.route('/payment/cancel')
 def cancel():
-    return invoke_http(url=master_continue_URL, method='GET')
+    return requests.get(url=master_continue_URL)
 
 @app.route('/payment/rent', methods=['POST'])
 def rent_car():
