@@ -32,9 +32,9 @@ window.onload = function () {
                 var car = `
                   <div class="card" style="width: 18rem;">
                     <div class="card-body">
-                      <h5 class="card-title">${cars[i].carMake}</h5>
+                      <h5 class="card-title">${cars[i].carMake} | ${cars[i].carModel}</h5>
                       <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: ${cars[i].capacity} | Price per day: ${cars[i].pricePerDay}</h6>
-                      <p class="card-text">${cars[i].distance} away from you <br>Carplate: ${cars[i].carPlate}</p>
+                      <p class="card-text">Carplate: ${cars[i].carPlate}</p>
                       <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#returnCar" onclick="${addReturnRentalId(cars[i].rentalId)}">Return</button></p>
                       
                     </div>
@@ -73,6 +73,7 @@ function completeRental() {
             case 200:
                 console.log("success!")
                 window.alert("Your car has successfully been returned and the money has been released to you!")
+                location.reload()
                 break
             default:
                 console.log(`ERROR: ${response["code"]}: ${response["message"]}`)
