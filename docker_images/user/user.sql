@@ -9,8 +9,7 @@ CREATE TABLE IF NOT EXISTS `user` (
   `emailAddress` varchar(64) NOT NULL,
   `phoneNum` varchar(64) DEFAULT NULL,
   `stripeId` varchar(64) DEFAULT NULL,
-  PRIMARY KEY (`userId`),
-  UNIQUE (emailAddress)
+  PRIMARY KEY (`userId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `user` (`userId`, `name`, `emailAddress`, `phoneNum`, `stripeId`) VALUES
