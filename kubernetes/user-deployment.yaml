@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: user
-          image: brandonlim99/drivewhere:user
+          image: brandonlim99/kubernetes_test:user
           ports:
             - containerPort: 5001
           env: 

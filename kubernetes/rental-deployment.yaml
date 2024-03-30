@@ -14,13 +14,13 @@ spec:
     spec:
       containers:
         - name: rental
-          image: brandonlim99/drivewhere:rental
+          image: brandonlim99/kubernetes_test:rental
           ports:
             - containerPort: 5002
           env:
             - name: dbURL
               value: "mysql+mysqlconnector://root:1234@db-service:3306/drivewhereDB"
-            - name: APIKEY
+            - name: GMAPS_KEY
               valueFrom:
                 secretKeyRef:
                   name: gmaps-key
