@@ -66,7 +66,7 @@ def success():
         db.session.commit()
         json_data = {"code": 201, "data": {"renterEmailAddress": request.args.get('renter_email_address'), "ownerEmailAddress": request.args.get('owner_email_address'), "rentalId": rental_id}}
         response = requests.post(url=master_continue_URL, json=json_data, headers=headers).json()
-        return redirect(response["data"]["url"])
+        return redirect(response["data"]["redirect_url"])
 
     except Exception as e:
         json_data = {"code": 500, "message": "An error occurred while processing payment. " + str(e)}
