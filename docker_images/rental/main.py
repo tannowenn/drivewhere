@@ -10,8 +10,9 @@ CORS(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://root@localhost:3306/rental'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+PORT = environ.get('PORT') or 5002
 
-Api_key = environ.get("APIKEY") or 'AIzaSyBkH3BTvWeG9UzLMNhSJsm95KxNNDpi0yE'
+Api_key = environ.get('GMAPS_KEY')
 
 db = SQLAlchemy(app)
 
@@ -153,4 +154,4 @@ def update_rental_status():
     
 
 if __name__== '__main__':
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=True)

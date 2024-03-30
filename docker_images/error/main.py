@@ -12,6 +12,7 @@ from flask import current_app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = environ.get('dbURL') or 'mysql+mysqlconnector://is213@host.docker.internal:3306/error'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+PORT = environ.get('PORT') or 5005
 db = SQLAlchemy(app)
 
 class Error(db.Model):
@@ -75,7 +76,7 @@ def processError(message):
 if __name__ == "__main__":
     from threading import Thread
 
-    web_server_thread = Thread(target=app.run, kwargs={"host":"0.0.0.0", "port":5005})
+    web_server_thread = Thread(target=app.run, kwargs={"host":"0.0.0.0", "port":PORT})
     web_server_thread.start()
 
     with app.app_context():

@@ -20,7 +20,7 @@ master_cancel_URL = environ.get('master_cancel_URL') or "http://host.docker.inte
 COMMISSION_PCT = 0.1
 PAYMENT_FEE_PCT = 0.039
 PAYMENT_FEE_FLAT = 0.5
-PAYMENT_PORT = 5004
+PORT = environ.get('PORT') or 5004
 
 app = Flask(__name__)
 CORS(app)
@@ -90,8 +90,8 @@ def rent_car():
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f"http://localhost:{PAYMENT_PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=f'http://localhost:{PAYMENT_PORT}/payment/cancel',
+            success_url=f"http://localhost:{PORT}/payment/success?rental_id={body['rentalId']}&payer_id={body['payerId']}&payee_id={body['payeeId']}&renter_email_address={body['renterEmailAddress']}&owner_email_address={body['ownerEmailAddress']}"+'&session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=f'http://localhost:{PORT}/payment/cancel',
         )
 
         return jsonify(
@@ -166,4 +166,4 @@ def return_car():
         ), 500
 
 if __name__== '__main__':
-    app.run(host="0.0.0.0", port=PAYMENT_PORT, debug=True)
+    app.run(host="0.0.0.0", port=PORT, debug=True)
