@@ -127,11 +127,26 @@ We need to portforward the db-service to localhost to add the data!
 - Copy the sql code from db.sql in the Kubernetes file and run it in the workbench
 - If you would like to test the email, add your own email address to the database!
 
-Step 6: Run through the scenarios
-blah blah blah
-...
-If it is successful, you should see two emails
-![email sent by drivewhere1@gmail.com](/images/rent_email.png)
+Step 6: Port forward the services
 
+Find the frontend pod <br>
+`kubectl get pods` <br>
+Select the frontend-deployment <br>
+![image](https://github.com/tannowenn/drivewhere/assets/142380212/5342303c-5f78-4742-904a-adeb6eb55b3f)
+
+
+Now we port-forward the services
+`kubectl port-forward <name of frontend-pod> 8080:80`
+`kubectl port-forward service/master-service 5100:5100`
+`kubectl port-forward service/rental-service 5002:5002`
+
+
+Step 7: Run through the scenarios <br>
+Scenario 1: Owner creates listing <br>
+Scenario 2: User rents a car <br> 
+If it is successful, you should see two emails <br>
+![email sent by drivewhere1@gmail.com](/images/rent_email.png)
+<br>
+Scenario 3: User returns the car and Owner releases payment <br>
 When user return the car successfully, you should see two emails
 ![email sent by drivewhere1@gmail.com](/images/return_email.png)
