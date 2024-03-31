@@ -2,6 +2,8 @@
 function getOpenListing() {
 
     var address = document.getElementById("searchAddress").value
+    var documentSelector = document.getElementById("carList")
+    documentSelector.innerHTML = "<h2>Loading cars, this may take a few seconds...</h2>"
 
     fetch("http://localhost:5100/master/rental", {
         method: "POST",

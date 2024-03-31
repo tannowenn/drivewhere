@@ -70,14 +70,13 @@ def get_rental():
                     "message": "Failure at get all user service."
                 }
             user_list = user_response["data"]["users"]
+            user_phone_dict = {}
+            for user in user_list:
+                user_phone_dict[str(user['userId'])] = user['phoneNum']
 
             for rental in rental_list:
-                for user in user_list:
-                    if str(rental['userId']) == str(user['userId']):
-                        rental['phoneNum'] = user['phoneNum']
-                        break
                 try:
-                    rental_phone_num = rental['phoneNum']
+                    rental['phoneNum'] = user_phone_dict[str(rental['userId'])]
                 except KeyError:
                     return jsonify({
                         "code": 500,
