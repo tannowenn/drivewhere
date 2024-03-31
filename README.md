@@ -1,6 +1,3 @@
-
-drive here drive there drive everywhere
-
 # Deploying with Docker
 ## Prerequisites
 To deploy the application with the use of Docker, some prerequisites must be made.
