@@ -87,7 +87,7 @@ Step 3: Creating configMap for AMQP
 We need to create the configMap for the setup of RabbitMQ, navigate to the kubernetes folder on the command line and enter these two lines 
 
 `kubectl create configmap rabbitmq-config --from-file=rabbitmq.config=rabbitmq.config` <br>
-`kubectl create configmap rabbitmq-definitions --from-file=rabbitmq.config=rabbitmq_definitions.json`
+`kubectl create configmap rabbitmq-definitions --from-file=rabbitmq_definitions.json=rabbitmq_definitions.json`
 
 We should see a success message such as configmap/rabbitmq-config created
 <hr>
