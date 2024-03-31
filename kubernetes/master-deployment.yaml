@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: master
-          image: brandonlim99/kubernetes_test:master
+          image: brandonlim99/kubernetes:master
           ports:
             - containerPort: 5100
           env:

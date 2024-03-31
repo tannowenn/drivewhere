@@ -218,7 +218,7 @@ def continued():
         #     "message": "Everything is a success, car is rented",
         #     "data": {"redirect_url": f"http://{FRONTEND_HOST}/frontend/index.html"}
         # }            
-        return redirect(f"http://{FRONTEND_HOST}/frontend/index.html")
+        return redirect(f"http://{FRONTEND_HOST}:8080/")
 
     except Exception as e:
         # Unexpected error in code
@@ -234,7 +234,7 @@ def continued():
 
 @app.route("/master/rental/cancel")
 def cancel():
-    return redirect(f"http://{FRONTEND_HOST}/frontend/index.html")
+    return redirect(f"http://{FRONTEND_HOST}:8080/")
 
 # for user scenario 3
 @app.route("/master/rental/update", methods=['PUT'])

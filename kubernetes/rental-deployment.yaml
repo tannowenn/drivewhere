@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: rental
-          image: brandonlim99/kubernetes_test:rental
+          image: brandonlim99/kubernetes:rental
           ports:
             - containerPort: 5002
           env:

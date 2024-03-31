@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: payment
-          image: brandonlim99/kubernetes_test:payment
+          image: brandonlim99/kubernetes:payment
           ports:
             - containerPort: 5004
           env: 

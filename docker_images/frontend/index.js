@@ -1,7 +1,7 @@
 // getting data from rental DB
 function getOpenListing() {
 
-    var address = document.getElementById("address").value
+    var address = document.getElementById("user_address").value
 
     fetch("http://localhost:5002/rental", {
         method: "POST",
@@ -10,7 +10,8 @@ function getOpenListing() {
         },
         body: JSON.stringify({
             address: address,
-            status: "open"
+            status: "open",
+            userId: null
         })
     })
     .then(response => {

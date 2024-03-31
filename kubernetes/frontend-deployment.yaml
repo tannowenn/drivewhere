@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: brandonlim99/kubernetes_test:frontend-v3
+        image: brandonlim99/kubernetes:frontend
         ports:
         - containerPort: 8080
 

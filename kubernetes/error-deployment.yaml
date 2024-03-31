@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: error
-          image: brandonlim99/kubernetes_test:error
+          image: brandonlim99/kubernetes:error
           ports:
             - containerPort: 5005
           env:
