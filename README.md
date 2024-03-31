@@ -28,6 +28,8 @@ To deploy the application with the use of Docker, some prerequisites must be mad
     - user.sql
         - Note for user.sql, you will need to use your own "stripeId" values from test "Connect" accounts from your Stripe account if you wish to see the payment process on your Stripe account.
 
+1. Ensure you have created an account 'is213'@'%' with no password in MySQL and it is granted all privileges for all tables in the databases created in the previous step. You may do this in client that can use MySQL (e.g phpMyAdmin). (_If you wish to use a different account name/password, ensure that you change the dbURL values in the `.env` file below accordingly_)
+
 1. Move to the docker_images folder through the terminal
 
     `cd docker_images`
