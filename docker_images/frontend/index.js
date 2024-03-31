@@ -56,7 +56,7 @@ function getOpenListing() {
 
 // handle new post
 function createRental() {
-    var userId = 3 
+    var userId = "3" 
     var carModel = document.getElementById("carModel").value
     var carMake = document.getElementById("carMake").value
     var capacity = document.getElementById("capacity").value
@@ -88,8 +88,10 @@ function createRental() {
         switch (response["code"]) {
             case 201:
                 console.log(response)
+                window.alert("Successfully created your listing!")
                 break
             default:
+                window.alert("Something went wrong with creating your listing!")
                 console.log(`ERROR: ${response["code"]}: ${response["message"]}`)
         }
     })

@@ -47,22 +47,22 @@ CREATE TABLE IF NOT EXISTS `rental` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `rental` (`rentalId`, `status`, `userId`, `address`, `carModel`,`carMake`,`capacity`,`carPlate`,`pricePerDay`) VALUES
-(1, 'open', '2', '520709', 'Honda', 'HondaWow', 1, '12345678', 10.5),
-(2, 'open', '3', '199018', 'Ford Mustang', 'Ford Mustang', 2, '12345678', 10),
-(3, 'open', '4', '808932', 'Toyota Camry', 'Toyota Camry', 3, '12345678', 217),
-(4, 'open', '5', '138756', 'Chevrolet Silverado', 'Chevrolet Silverado', 4, '12345678', 34),
-(5, 'open', '6', '079027', 'BMW 3 Series', 'BMW 3 Series', 5, '12345678', 109),
-(6, 'open', '7', '199018', 'Mercedes-Benz C-Class', 'Mercedes-Benz C-Class', 6, '12345678', 14),
-(7, 'open', '8', '522201', 'Tesla Model S', 'Tesla Model S', 7, '12345678', 76),
-(8, 'open', '9', '600348', 'Audi Q5', 'Audi Q5', 4, '12345678', 321),
-(9, 'open', '10', '039594', 'Subaru Outback', 'Subaru Outback', 8, '12345678', 123),
-(10, 'open', '11', '069045', 'Jeep Wrangler', 'Jeep Wrangler', 10, '12345678', 420),
-(11, 'open', '12', '455286', 'Hyundai Sonata', 'Hyundai Sonata', 11, '12345678', 5.5),
-(12, 'open', '13', '507097', 'Nissan Rogue', 'Nissan Rogue', 13, '12345678', 36),
-(13, 'open', '14', '188065', 'Kia Sorento', 'Kia Sorento', 6, '12345678', 50),
-(14, 'close', '15', '520708', 'Lexus RX', 'Lexus RX', 3, '12345678', 100.5),
-(15, 'close', '16', '520707', 'Porsche 911', 'Porsche 911', 1, '12345678', 8.5),
-(16, 'close', '17', '520706', 'Honda', 'HondaWow', 1, '12345678', 69);
+(1, 'open', '2', '520709', 'Civic', 'Honda', 1, '12345678', 10.5),
+(2, 'open', '3', '199018', 'Mustang', 'Ford', 2, '12345678', 10),
+(3, 'open', '4', '808932', 'Camry', 'Toyota', 3, '12345678', 217),
+(4, 'open', '5', '138756', 'Silverado', 'Chevrolet', 4, '12345678', 34),
+(5, 'open', '6', '079027', '3 Series', 'BMW', 5, '12345678', 109),
+(6, 'open', '7', '199018', 'C-Class', 'Mercedes-Benz', 6, '12345678', 14),
+(7, 'open', '8', '522201', 'Model S', 'Tesla', 7, '12345678', 76),
+(8, 'open', '9', '600348', 'Q5', 'Audi', 4, '12345678', 321),
+(9, 'open', '10', '039594', 'Outback', 'Subaru', 8, '12345678', 123),
+(10, 'open', '11', '069045', 'Wrangler', 'Jeep', 10, '12345678', 420),
+(11, 'open', '12', '455286', 'Sonata', 'Hyundai', 11, '12345678', 5.5),
+(12, 'open', '13', '507097', 'Rogue', 'Nissan', 13, '12345678', 36),
+(13, 'open', '14', '188065', 'Sorento', 'Kia', 6, '12345678', 50),
+(14, 'close', '15', '520708', 'RX', 'Lexus', 3, '12345678', 100.5),
+(15, 'close', '16', '520707', '911', 'Porsche', 1, '12345678', 8.5),
+(16, 'close', '17', '520706', 'Jazz', 'Honda', 1, '12345678', 69);
 
 -- user table | IMPORTANT FOR GRADER: add your own email address, everything can be the same
 DROP TABLE IF EXISTS `user`;
@@ -78,15 +78,15 @@ CREATE TABLE IF NOT EXISTS `user` (
 
 INSERT INTO user (userId, name, emailAddress, phoneNum, stripeId) VALUES
 (1, 'renter', 'ryan.ng.2022@scis.smu.edu.sg', '92436688', 'acct_1OuWDc2MktsaBBhJ'),
-(2, 'Clement', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(3, 'Ryan', 'brandonlim_99@outlook.com', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(4, 'Brandon', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(5, 'Owen', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(6, 'Elliott', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(7, 'Bob', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(8, 'Myat', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(9, 'Sherine', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(10, 'Meldrick', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(11, 'Lee', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
-(12, 'Bill', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ')
+(2, 'Clement', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(3, 'Ryan', 'brandonlim_99@outlook.com', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(4, 'Brandon', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(5, 'Owen', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(6, 'Elliott', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(7, 'Bob', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(8, 'Myat', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(9, 'Sherine', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(10, 'Meldrick', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(11, 'Lee', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
+(12, 'Bill', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ'),
 (13, 'Beyonce', 'ryan.ng.2022@scis.smu.edu.sg', '92882404', 'acct_1OuWDc2MktsaBBhJ');
