@@ -88,10 +88,12 @@ function createRental() {
         switch (response["code"]) {
             case 201:
                 console.log(response)
-                window.alert("Successfully created your listing!")
+                alert("Successfully created your listing!")
+                window.location.reload()
                 break
             default:
-                window.alert("Something went wrong with creating your listing!")
+                alert("Something went wrong with creating your listing!")
+                window.location.reload()
                 console.log(`ERROR: ${response["code"]}: ${response["message"]}`)
         }
     })
