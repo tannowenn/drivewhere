@@ -118,16 +118,17 @@ If any deployments/pods/statefulsets appear as failed, give it a while as it is 
 If everything is successful, you should see this
 ![Kubernetes Dashboard](/images/k8s_dashboard.png)
 <hr>
-Step 6: Adding data to the database
+Step 6: Adding data to the database <br>
 We need to portforward the db-service to localhost to add the data!
 
 `kubectl port-forward service/db-service 3306:3306`
 
-- Open up MySQL and click on the localinstance and enter the password 1234
+- Open MySQL Workbench or your MySQL client and click on the localinstance and enter the password 1234
 - Copy the sql code from db.sql in the Kubernetes file and run it in the workbench
 - If you would like to test the email, add your own email address to the database!
+<hr>
 
-Step 6: Port forward the services
+Step 7: Port forward the services
 
 Find the frontend pod <br>
 `kubectl get pods` <br>
@@ -135,18 +136,19 @@ Select the frontend-deployment <br>
 ![image](https://github.com/tannowenn/drivewhere/assets/142380212/5342303c-5f78-4742-904a-adeb6eb55b3f)
 
 
-Now we port-forward the services
-`kubectl port-forward <name of frontend-pod> 8080:80`
-`kubectl port-forward service/master-service 5100:5100`
-`kubectl port-forward service/rental-service 5002:5002`
+Now we port-forward the services <br>
+`kubectl port-forward <name of frontend-pod> 8080:80` <br>
+`kubectl port-forward service/master-service 5100:5100` <br>
+`kubectl port-forward service/rental-service 5002:5002` <br>
 
+<hr>
 
-Step 7: Run through the scenarios <br>
-Scenario 1: Owner creates listing <br>
-Scenario 2: User rents a car <br> 
+Step 8: Run through the scenarios <br>
+**Scenario 1: Owner creates listing** <br>
+**Scenario 2: User rents a car** <br> 
 If it is successful, you should see two emails <br>
 ![email sent by drivewhere1@gmail.com](/images/rent_email.png)
 <br>
-Scenario 3: User returns the car and Owner releases payment <br>
+**Scenario 3: User returns the car and Owner releases payment** <br>
 When user return the car successfully, you should see two emails
 ![email sent by drivewhere1@gmail.com](/images/return_email.png)
