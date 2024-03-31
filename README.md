@@ -107,6 +107,7 @@ Step 5: Adding the deployment to the nodes
 `kubectl apply -f email-deployment.yaml`  <br>
 `kubectl apply -f error-deployment.yaml`  <br>
 `kubectl apply -f master-deployment.yaml`  <br>
+`kubectl apply -f frontend-deployment.yaml`  <br>
 `kubectl apply -f payment-deployment.yaml`  <br>
 `kubectl apply -f rental-deployment.yaml`  <br>
 `kubectl apply -f user-deployment.yaml` <br>
