@@ -4,7 +4,6 @@ from flask_cors import CORS
 import os, sys
 from os import environ
 
-import requests
 from invokes import invoke_http
 
 import pika
@@ -20,13 +19,14 @@ PAYMENT_HOST = environ.get('PAYMENT_HOST') or "payment"
 PAYMENT_PORT = environ.get('PAYMENT_PORT') or 5004
 rental_update_URL = environ.get('rental_update_URL') or "http://host.docker.internal:5002/rental/update" 
 rental_get_URL = environ.get('rental_get_URL') or "http://host.docker.internal:5002/rental/info"
+rental_list_URL = environ.get('rental_list_URL') or "http://host.docker.internal:5002/rental"
 
-user_get_URL = environ.get('user_get_URL') or "http://host.docker.internal:5001/user/"
+user_get_URL = environ.get('user_get_URL') or "http://host.docker.internal:5001/user"
 
 payment_submit_URL = environ.get('payment_submit_URL') or "http://host.docker.internal:5004/payment/rent" 
 payment_release_URL = environ.get('payment_release_URL') or "http://host.docker.internal:5004/payment/return"
 
-# remember dont forget to change excahnge name
+# remember dont forget to change exchange name
 exchangename = environ.get('exchangename') or "drivewhere_topic" 
 exchangetype = environ.get('exchangetype') or "topic" 
 
@@ -39,7 +39,80 @@ if not amqp_connection.check_exchange(channel, exchangename, exchangetype):
     print("\nCreate the 'Exchange' before running this microservice. \nExiting the program.")
     sys.exit(0)  # Exit with a success status
 
-# for user scenario 2
+# for user scenario 2 part 1
+@app.route("/master/rental", methods=['POST'])
+def get_rental():
+    # Simple check of input format and data of the request are JSON
+    if request.is_json:
+        try:
+            data = request.get_json()
+            rental_response = listRental(data)
+            current_code = rental_response['code']
+            
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    "data": rental_response["data"],
+                    "message": "Failure at rental get service."
+                }
+            rental_list = rental_response["data"]["rental_list"]
+
+            user_response = getAllUsers()
+            current_code = user_response['code']
+            if current_code not in range(200, 300):
+                #no need send to error amqp as its done already and return stuff here
+                
+                return {
+                    "code": current_code,
+                    "data": user_response["data"],
+                    "message": "Failure at get all user service."
+                }
+            user_list = user_response["data"]["users"]
+
+            for rental in rental_list:
+                for user in user_list:
+                    if str(rental['userId']) == str(user['userId']):
+                        rental['phoneNum'] = user['phoneNum']
+                        break
+                try:
+                    rental_phone_num = rental['phoneNum']
+                except KeyError:
+                    return jsonify({
+                        "code": 500,
+                        "message": f"Error getting phone num of user ID {rental['userId']}, maybe user ID does not exist in user DB?"
+                    }), 500
+            
+            return jsonify(
+                {
+                    "code": 200,
+                    "data": {
+                        "rental_list": rental_list
+                    }
+                }
+            )
+
+        except Exception as e:
+            # Unexpected error in code
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            ex_str = str(e) + " at " + str(exc_type) + ": " + fname + ": line " + str(exc_tb.tb_lineno)
+            print(ex_str)
+
+            return jsonify({
+                "code": 500,
+                "message": "master/main.py internal error: " + ex_str
+            }), 500
+
+    # if reached here, not a JSON request.
+    return jsonify({
+        "code": 400,
+        "message": "Invalid JSON input: " + str(request.get_data())
+    }), 400
+
+
+# for user scenario 2 part 2
 @app.route("/master/rental/request", methods=['POST'])
 def rent_car():
     # Simple check of input format and data of the request are JSON
@@ -477,6 +550,30 @@ def getRental(sendData):
         }
     else:
         return rental_service_result
+    
+# function for getting whole rental list
+def listRental(sendData):
+
+    # invoking rental microservice
+    current_service = "rental"
+    print('\n\n-----Invoking get rental microservice-----')   
+    
+    rental_service_result = invoke_http(
+        rental_list_URL, method="POST", json=sendData)
+    
+    print("rental_status_result:", rental_service_result, '\n')
+
+    # error handling for rental microservice
+    code = rental_service_result["code"]
+    if code not in range(200, 300):
+        #send to error amqp and return stuff here
+        errorHandling(rental_service_result, code, current_service)
+        return {
+            "code": code,
+            "data": rental_service_result
+        }
+    else:
+        return rental_service_result
 
 # function for update rental
 def updateRental(update_request):
@@ -499,13 +596,38 @@ def updateRental(update_request):
     else:
         return rental_service_result
 
+# function for get all user service
+def getAllUsers():
+    # invoking user microservice
+    current_service = "user"
+
+    print('\n\n-----Invoking user microservice-----')   
+    
+    user_service_result = invoke_http(
+        user_get_URL, method="GET", json={})
+    
+    print("user_status_result:", user_service_result, '\n')
+
+    # error handling for user microservice
+    code = user_service_result["code"]
+    if code not in range(200, 300):
+        # do error amqp and return stuff
+        errorHandling(user_service_result, code, current_service)
+        
+        return {
+            "code": code,
+            "data": user_service_result
+        }
+    else:
+        return user_service_result
+
 # function for user service
 def getUser(owner_id):
     # invoking user microservice
     current_service = "user"
 
     print('\n\n-----Invoking user microservice-----')   
-    user_URL = user_get_URL + f"{owner_id}" 
+    user_URL = user_get_URL + f"/{owner_id}" 
     
     user_service_result = invoke_http(
         user_URL, method="GET", json={})
