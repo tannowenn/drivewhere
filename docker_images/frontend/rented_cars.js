@@ -1,10 +1,16 @@
+const RENTAL_HOST = "localhost"
+const RENTAL_PORT = 5002
+
+const MASTER_HOST = "localhost"
+const MASTER_PORT = 5100
+
 // when user presses on their rented cars
 // getting data from rental DB
 window.onload = function () {
     // harded coded value user 3 (which is us rn)
     currentUserId = "3"
 
-    fetch("http://localhost:5002/rental", {
+    fetch(`http://${RENTAL_HOST}:${RENTAL_PORT}/rental`, {
         method: "POST",
         headers: {
             "Content-Type" : "application/json"
@@ -56,7 +62,7 @@ function completeRental() {
         "rentalId": rentalId
     }
     
-    fetch("http://localhost:5100/master/rental/update",
+    fetch(`http://${MASTER_HOST}:${MASTER_PORT}/master/rental/update`,
     {
         method: "PUT",
         headers: {

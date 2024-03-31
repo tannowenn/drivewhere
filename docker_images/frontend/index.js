@@ -1,3 +1,9 @@
+const RENTAL_HOST = "localhost"
+const RENTAL_PORT = 5002
+
+const MASTER_HOST = "localhost"
+const MASTER_PORT = 5100
+
 // getting data from rental DB
 function getOpenListing() {
 
@@ -5,7 +11,7 @@ function getOpenListing() {
     var documentSelector = document.getElementById("carList")
     documentSelector.innerHTML = "<h2>Loading cars, this may take a few seconds...</h2>"
 
-    fetch("http://localhost:5100/master/rental", {
+    fetch(`http://${MASTER_HOST}:${MASTER_PORT}/master/rental`, {
         method: "POST",
         headers: {
             "Content-Type" : "application/json"
@@ -77,7 +83,7 @@ function createRental() {
         "status": "open"
     }
     
-    fetch("http://localhost:5002/rental/create",
+    fetch(`http://${RENTAL_HOST}:${RENTAL_PORT}/rental/create`,
     {
         method: "POST",
         headers: {
@@ -117,7 +123,7 @@ function requestRental() {
         "days": days
     }
     
-    fetch("http://localhost:5100/master/rental/request",
+    fetch(`http://${MASTER_HOST}:${MASTER_PORT}/master/rental/request`,
     {
         method: "POST",
         headers: {
