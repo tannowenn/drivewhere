@@ -36,7 +36,7 @@
 
       <h1 class="mt-5">Rent our available cars right now!</h1>
       <div class="input-group mb-3 w-25 m-auto">
-        <input type="text" class="form-control" placeholder="Your postal code" aria-label="user's postal code" aria-describedby="button-addon2" id="address">
+        <input type="text" class="form-control" placeholder="Your postal code" aria-label="user's postal code" aria-describedby="button-addon2" id="searchAddress">
         <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="getOpenListing()">Search</button>
       </div>
 
@@ -89,7 +89,7 @@
 
               <div class="col-4">
                 <label for="address" class="form-label">Address</label>
-                <input type="text" class="form-control" id="address">
+                <input type="text" class="form-control" id="createAddress">
               </div>
 
               <div class="col-4">
@@ -121,7 +121,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="listingCarForm">
+          <form id="rentingCarForm">
 
             <!-- First row -->
             <div class="row mb-4">

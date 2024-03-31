@@ -1,7 +1,7 @@
 // getting data from rental DB
 function getOpenListing() {
 
-    var address = document.getElementById("address").value
+    var address = document.getElementById("searchAddress").value
 
     fetch("http://localhost:5002/rental", {
         method: "POST",
@@ -61,7 +61,7 @@ function createRental() {
     var carMake = document.getElementById("carMake").value
     var capacity = document.getElementById("capacity").value
     var carPlate = document.getElementById("carPlate").value
-    var address = document.getElementById("address").value
+    var address = document.getElementById("createAddress").value
     var pricePerDay = document.getElementById("pricePerDay").value
 
     let jsonBody = {
@@ -87,7 +87,6 @@ function createRental() {
     .then(response => {
         switch (response["code"]) {
             case 201:
-                console.log(response)
                 alert("Successfully created your listing!")
                 window.location.reload()
                 break
