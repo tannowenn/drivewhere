@@ -87,8 +87,12 @@ function createRental() {
         switch (response["code"]) {
             case 201:
                 console.log(response)
+                alert("Successfully listed your car!")
+                window.location.reload()
                 break
             default:
+                alert("Something went wrong")
+                window.location.reload()
                 console.log(`ERROR: ${response["code"]}: ${response["message"]}`)
         }
     })
