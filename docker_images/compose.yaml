@@ -122,8 +122,9 @@ services:
       rabbit_host: ${RABBIT_HOST}
       rabbit_port: ${RABBIT_PORT}
       rental_get_URL: http://${RENTAL_HOST}:${RENTAL_PORT}/rental/info 
-      rental_update_URL: http://${RENTAL_HOST}:${RENTAL_PORT}/rental/update 
-      user_get_URL: http://${USER_HOST}:${USER_PORT}/user/
+      rental_update_URL: http://${RENTAL_HOST}:${RENTAL_PORT}/rental/update
+      rental_list_URL: http://${RENTAL_HOST}:${RENTAL_PORT}/rental
+      user_get_URL: http://${USER_HOST}:${USER_PORT}/user
       payment_submit_URL: http://${PAYMENT_HOST}:${PAYMENT_PORT}/payment/rent
       payment_release_URL: http://${PAYMENT_HOST}:${PAYMENT_PORT}/payment/return
       PORT: ${MASTER_PORT}

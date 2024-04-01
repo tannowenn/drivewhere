@@ -14,14 +14,16 @@ spec:
     spec:
       containers:
         - name: master
-          image: brandonlim99/kubernetes:master
+          image: brandonlim99/drivewhereimg:master
           ports:
             - containerPort: 5100
           env:
             - name: user_get_URL
-              value: "http://user-service:5001/user/"
+              value: "http://user-service:5001/user"
             - name: rental_update_URL
               value: "http://rental-service:5002/rental/update"
+            - name: rental_list_URL
+              value: "http://rental-service:5002/rental"
             - name: rental_get_URL
               value: "http://rental-service:5002/rental/info"
             - name: email_URL

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: rental
-          image: brandonlim99/kubernetes:rental
+          image: brandonlim99/drivewhereimg:rental
           ports:
             - containerPort: 5002
           env:

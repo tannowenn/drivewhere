@@ -29,7 +29,7 @@ class User(db.Model):
 
 
     def json(self):
-        return {"name": self.name, "emailAddress": self.emailAddress, "phoneNum": self.phoneNum,
+        return {"userId": self.userId, "name": self.name, "emailAddress": self.emailAddress, "phoneNum": self.phoneNum,
         "stripeId": self.stripeId}
 
 @app.route("/user")

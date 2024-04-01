@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: email
-          image: brandonlim99/kubernetes:email
+          image: brandonlim99/drivewhereimg:email
           ports:
             - containerPort: 5003
           env:

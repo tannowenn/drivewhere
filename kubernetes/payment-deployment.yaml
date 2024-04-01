@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: payment
-          image: brandonlim99/kubernetes:payment
+          image: brandonlim99/drivewhereimg:payment
           ports:
             - containerPort: 5004
           env: 

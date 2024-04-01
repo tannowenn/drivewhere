@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: brandonlim99/kubernetes:frontend
+        image: brandonlim99/drivewhereimg:frontend
         ports:
         - containerPort: 8080
 
