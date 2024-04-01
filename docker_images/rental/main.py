@@ -45,13 +45,22 @@ def get_open_rental_listings():
     if len(rental_list):
         rental_dict = []
         for listing in rental_list:
-            listing = listing.json()
-            gmaps = googlemaps.Client(key=Api_key)
-            source = data['address']
-            destination = listing['address']
-            direction_result = gmaps.directions(source,destination)
-            listing['distance'] = direction_result[0]['legs'][0]['distance']['text']
-            rental_dict.append(listing)
+            try:
+                listing = listing.json()
+                gmaps = googlemaps.Client(key=Api_key)
+                source = data['address']
+                destination = listing['address']
+                direction_result = gmaps.directions(source,destination)
+                listing['distance'] = direction_result[0]['legs'][0]['distance']['text']
+                rental_dict.append(listing)
+            except:
+                return jsonify(
+                    {
+                    "code": 500,
+                    "message": "Please enter a valid postal code"
+                    }
+                ), 500
+
         return jsonify(
             {
                 "code": 200,
