@@ -43,7 +43,7 @@ function getOpenListing() {
                 <div class="card-body">
                   <h5 class="card-title">${cars[i].carMake} ${cars[i].carModel}</h5>
                   <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: ${cars[i].capacity} | Price per day: ${cars[i].pricePerDay}</h6>
-                  <p class="card-text">${cars[i].distance} away from you <br>Carplate: ${cars[i].carPlate}<br>Contact Number: ${cars[i].phoneNum}</p>
+                  <p class="card-text">${cars[i].distance} away from you<br>Postal Code: ${cars[i].address}<br>Carplate: ${cars[i].carPlate}<br>Contact Number: ${cars[i].phoneNum}</p>
                   <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#rentCar" onclick="addRentalId(${cars[i].rentalId})">Rent</button></p>
                   
                 </div>

@@ -41,7 +41,7 @@ window.onload = function () {
                 <div class="card-body">
                     <h5 class="card-title">${cars[i].carMake} | ${cars[i].carModel}</h5>
                     <h6 class="card-subtitle mb-2 text-body-secondary">Capacity: ${cars[i].capacity} | Price per day: ${cars[i].pricePerDay}</h6>
-                    <p class="card-text">Carplate: ${cars[i].carPlate}</p>
+                    <p class="card-text">Postal Code: ${cars[i].address}<br>Carplate: ${cars[i].carPlate}</p>
                     <p class="card-footer"><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#returnCar" onclick="${addReturnRentalId(cars[i].rentalId)}">Return</button></p>
                     
                 </div>
