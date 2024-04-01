@@ -62,6 +62,10 @@ To deploy the application with the use of Docker, some prerequisites must be mad
     ```
     More information on the secrets/API keys you need:
     - STRIPE_KEY: Taken from your Stripe account, make sure it is a test key as this project uses the test version.
+        - During the Stripe checkout page, there are only 2 requirements to ensure ease of process.
+        1. A random expiry date of card can be given, but it must not be in the past from when you input it (_e.g. If it is 2024 this year, you cannot input a value before that like 2023_).
+        1. The card number should be `4000003720000278` as this test card allows the test money to go directly to the Stripe wallet's balance and can be used immediately.
+        - Every other value can be random without affecting any functionality of the scenarios of this project as long as they pass form validation.
     - GMAPS_KEY: Obtained from the Google cloud console using your Google account.
     - GMAIL_APP_PASS: Obtained from App Passwords in your Google account.
 
