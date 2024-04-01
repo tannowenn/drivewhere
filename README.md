@@ -75,21 +75,6 @@ To deploy the application with the use of Docker, some prerequisites must be mad
 
 1. Run through the scenarios
 
-    Scenario 1: Owner lists rental car
-    - drivewherrrrr
-    - drivewherrrrr
-    - drivewherrrrr
-
-    Scenario 2: Renter rents car
-    - drivewherrrrr
-    - drivewherrrrr
-    - drivewherrrrr
-
-    Scenario 3: Renter returns car
-    - drivewherrrrr
-    - drivewherrrrr
-    - drivewherrrrr
-
 1. Upon completion of your experience input the following to stop the containers.
 
     `docker compose down`
